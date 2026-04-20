@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <title>ScanKorea MVP</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --text: #111111;
+      --sub: #6b7280;
+      --line: #e5e7eb;
+      --primary: #111111;
+      --primary-text: #ffffff;
+      --soft: #eef2f7;
+      --link: #2563eb;
+      --danger: #dc2626;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .app-screen {
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding:
+        calc(20px + env(safe-area-inset-top))
+        16px
+        calc(24px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .screen-inner {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .hero-block {
+      padding-top: 8px;
+    }
+
+    .hero-title {
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 800;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-desc {
+      margin: 0;
+      color: var(--sub);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .lang-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .lang-btn,
+    .primary-btn,
+    .secondary-btn {
+      width: 100%;
+      min-height: 60px;
+      border: none;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+    }
+
+    .lang-btn,
+    .primary-btn {
+      background: var(--primary);
+      color: var(--primary-text);
+    }
+
+    .secondary-btn {
+      background: var(--soft);
+      color: var(--text);
+    }
+
+    .lang-btn:active,
+    .primary-btn:active,
+    .secondary-btn:active,
+    .text-btn:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .top-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .text-btn {
+      border: none;
+      background: transparent;
+      color: var(--link);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 8px 0;
+      white-space: nowrap;
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .scan-panel {
+      padding: 16px;
+    }
+
+    .scan-guide-box {
+      border: 2px dashed #cfd6df;
+      border-radius: 18px;
+      background: #fafbfc;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .scan-guide-text {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--sub);
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 16px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: #9ca3af;
+    }
+
+    .field input::placeholder {
+      color: #9ca3af;
+    }
+
+    .notice {
+      margin: 12px 0 0;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--sub);
+    }
+
+    .status-message.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .product-brand {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #4b5563;
+    }
+
+    .product-name {
+      font-size: 28px;
+      line-height: 1.25;
+      font-weight: 800;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .product-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .product-summary {
+      margin: 0;
+      color: #374151;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .section {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .section-title {
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #4b5563;
+    }
+
+    .section-body {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text);
+      word-break: keep-all;
+      white-space: pre-wrap;
+    }
+
+    .bottom-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+
+    .bottom-actions button {
+      flex: 1;
+    }
+
+    .footer-note {
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    @media (min-width: 768px) {
+      .app-screen {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .hero-title {
+        font-size: 34px;
+      }
+
+      .lang-btn,
+      .primary-btn,
+      .secondary-btn {
+        min-height: 64px;
+      }
+
+      .scan-guide-box {
+        min-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 언어 선택 -->
+  <section id="language-screen" class="app-screen">
+    <div class="screen-inner">
+      <div class="hero-block">
+        <h1 class="hero-title">Choose your language</h1>
+        <p class="hero-desc">Please select your preferred language to continue.</p>
+      </div>
+
+      <div class="lang-list">
+        <button class="lang-btn" data-lang="ko">한국어</button>
+        <button class="lang-btn" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="ja">日本語</button>
+        <button class="lang-btn" data-lang="zh-CN">简体中文</button>
+        <button class="lang-btn" data-lang="zh-TW">繁體中文</button>
+      </div>
+
+      <div class="footer-note">ScanKorea MVP</div>
+    </div>
+  </section>
+
+  <!-- 조회 화면 -->
+  <section id="scan-screen" class="app-screen hidden">
+    <div class="screen-inner">
+      <div class="top-bar">
+        <div class="top-title" id="scan-title">Scan Product</div>
+        <button class="text-btn" id="change-language-from-scan">Change language</button>
+      </div>
+
+      <div class="panel scan-panel">
+        <div class="scan-guide-box">
+          <p class="scan-guide-text" id="scan-guide-text">
+            Scan the barcode on the product.
+          </p>
+        </div>
+
+        <div class="field">
+          <input type="text" id="barcode-input" placeholder="Enter barcode for test" />
+        </div>
+
+        <button class="primary-btn" id="search-btn">Search product</button>
+
+        <p class="notice" id="scan-notice">
+          This is a temporary test input. Later, connect a real barcode scanner.
+        </p>
+
+        <p id="status-message" class="status-message hidden"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 상세 화면 -->
+  <section id="detail-screen" class="app-screen hidden">
+    <div class="screen-inner">
+      <div class="top-bar">
+        <div class="top-title" id="detail-title">Product Details</div>
+        <button class="text-btn" id="change-language-from-detail">Change language</button>
+      </div>
+
+      <div class="panel">
+        <p class="product-brand" id="product-brand"></p>
+        <h2 class="product-name" id="product-name"></h2>
+
+        <div class="product-meta">
+          <span class="meta-chip" id="product-category-chip"></span>
+        </div>
+
+        <p class="product-summary" id="product-summary"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-description">Description</h3>
+        <p class="section-body" id="product-description"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-volume">Volume</h3>
+        <p class="section-body" id="product-volume"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-feature">Features</h3>
+        <p class="section-body" id="product-feature"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-usage">How to use</h3>
+        <p class="section-body" id="product-usage"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-caution">Caution</h3>
+        <p class="section-body" id="product-caution"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-tag">Tags</h3>
+        <p class="section-body" id="product-tag"></p>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title" id="label-ingredient">Ingredients</h3>
+        <p class="section-body" id="product-ingredient"></p>
+      </div>
+
+      <!-- 선택 필드: functional -->
+      <div class="section hidden" id="section-functional">
+        <h3 class="section-title" id="label-functional">Functional</h3>
+        <p class="section-body" id="product-functional"></p>
+      </div>
+
+      <div class="bottom-actions">
+        <button class="secondary-btn" id="back-to-scan-btn">Back</button>
+        <button class="primary-btn" id="new-scan-btn">Scan again</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const API_BASE_URL = "https://script.google.com/macros/s/AKfycbxBrJKhTAl-fqZBlvOYp6m74uZ5-qrbh-MY8zzzxYvHGU4xVO5zSrACajjSBeBANiTC2Q/exec";
+
+    const languageScreen = document.getElementById("language-screen");
+    const scanScreen = document.getElementById("scan-screen");
+    const detailScreen = document.getElementById("detail-screen");
+
+    const barcodeInput = document.getElementById("barcode-input");
+    const searchBtn = document.getElementById("search-btn");
+    const statusMessage = document.getElementById("status-message");
+
+    const changeLanguageFromScan = document.getElementById("change-language-from-scan");
+    const changeLanguageFromDetail = document.getElementById("change-language-from-detail");
+    const backToScanBtn = document.getElementById("back-to-scan-btn");
+    const newScanBtn = document.getElementById("new-scan-btn");
+
+    const productBrand = document.getElementById("product-brand");
+    const productName = document.getElementById("product-name");
+    const productCategoryChip = document.getElementById("product-category-chip");
+    const productSummary = document.getElementById("product-summary");
+    const productDescription = document.getElementById("product-description");
+    const productVolume = document.getElementById("product-volume");
+    const productFeature = document.getElementById("product-feature");
+    const productUsage = document.getElementById("product-usage");
+    const productCaution = document.getElementById("product-caution");
+    const productTag = document.getElementById("product-tag");
+    const productIngredient = document.getElementById("product-ingredient");
+
+    const sectionFunctional = document.getElementById("section-functional");
+    const productFunctional = document.getElementById("product-functional");
+
+    const scanTitle = document.getElementById("scan-title");
+    const detailTitle = document.getElementById("detail-title");
+    const scanGuideText = document.getElementById("scan-guide-text");
+    const scanNotice = document.getElementById("scan-notice");
+
+    const labelDescription = document.getElementById("label-description");
+    const labelVolume = document.getElementById("label-volume");
+    const labelFeature = document.getElementById("label-feature");
+    const labelUsage = document.getElementById("label-usage");
+    const labelCaution = document.getElementById("label-caution");
+    const labelTag = document.getElementById("label-tag");
+    const labelIngredient = document.getElementById("label-ingredient");
+    const labelFunctional = document.getElementById("label-functional");
+
+    const translations = {
+      "ko": {
+        scanTitle: "상품 스캔",
+        detailTitle: "상품 정보",
+        scanGuide: "상품 바코드를 입력해 테스트하세요.",
+        scanNotice: "지금은 임시 테스트용 입력 방식입니다. 이후 실제 바코드 스캐너를 연결하면 됩니다.",
+        searchBtn: "상품 조회",
+        changeLanguage: "언어 변경",
+        back: "뒤로",
+        scanAgain: "다시 조회",
+        barcodePlaceholder: "테스트용 바코드 입력",
+        loading: "상품 정보를 불러오는 중입니다.",
+        alertBarcodeRequired: "바코드를 입력하세요.",
+        alertNotFound: "상품을 찾을 수 없습니다.",
+        alertNetworkError: "네트워크 오류가 발생했습니다.",
+        alertApiNotConfigured: "API 주소가 아직 설정되지 않았습니다.",
+        noBrand: "브랜드 없음",
+        noCategory: "카테고리 없음",
+        labels: {
+          description: "설명",
+          volume: "용량",
+          feature: "특징",
+          usage: "용도",
+          caution: "주의사항",
+          tag: "태그",
+          ingredient: "성분",
+          functional: "기능성 여부"
+        }
+      },
+      "en": {
+        scanTitle: "Scan Product",
+        detailTitle: "Product Details",
+        scanGuide: "Enter a barcode to test the product lookup.",
+        scanNotice: "This is a temporary test input. Later, connect a real barcode scanner.",
+        searchBtn: "Search product",
+        changeLanguage: "Change language",
+        back: "Back",
+        scanAgain: "Search again",
+        barcodePlaceholder: "Enter barcode for test",
+        loading: "Loading product information.",
+        alertBarcodeRequired: "Please enter a barcode.",
+        alertNotFound: "Product not found.",
+        alertNetworkError: "A network error occurred.",
+        alertApiNotConfigured: "API URL is not configured yet.",
+        noBrand: "No brand",
+        noCategory: "No category",
+        labels: {
+          description: "Description",
+          volume: "Volume",
+          feature: "Features",
+          usage: "How to use",
+          caution: "Caution",
+          tag: "Tags",
+          ingredient: "Ingredients",
+          functional: "Functional"
+        }
+      },
+      "ja": {
+        scanTitle: "商品スキャン",
+        detailTitle: "商品情報",
+        scanGuide: "テスト用バーコードを入力してください。",
+        scanNotice: "現在はテスト用の入力方式です。後で実際のバーコードスキャナーを接続できます。",
+        searchBtn: "商品を検索",
+        changeLanguage: "言語変更",
+        back: "戻る",
+        scanAgain: "再検索",
+        barcodePlaceholder: "テスト用バーコードを入力",
+        loading: "商品情報を読み込み中です。",
+        alertBarcodeRequired: "バーコードを入力してください。",
+        alertNotFound: "商品が見つかりません。",
+        alertNetworkError: "ネットワークエラーが発生しました。",
+        alertApiNotConfigured: "API URLがまだ設定されていません。",
+        noBrand: "ブランドなし",
+        noCategory: "カテゴリなし",
+        labels: {
+          description: "説明",
+          volume: "容量",
+          feature: "特徴",
+          usage: "使い方",
+          caution: "注意事項",
+          tag: "タグ",
+          ingredient: "成分",
+          functional: "機能性"
+        }
+      },
+      "zh-CN": {
+        scanTitle: "扫描商品",
+        detailTitle: "商品信息",
+        scanGuide: "请输入条码进行测试。",
+        scanNotice: "当前为测试输入方式，后续可接入真实条码扫描器。",
+        searchBtn: "查询商品",
+        changeLanguage: "切换语言",
+        back: "返回",
+        scanAgain: "重新查询",
+        barcodePlaceholder: "输入测试条码",
+        loading: "正在加载商品信息。",
+        alertBarcodeRequired: "请输入条码。",
+        alertNotFound: "未找到商品。",
+        alertNetworkError: "发生网络错误。",
+        alertApiNotConfigured: "API 地址尚未设置。",
+        noBrand: "无品牌",
+        noCategory: "无分类",
+        labels: {
+          description: "说明",
+          volume: "容量",
+          feature: "特点",
+          usage: "用途",
+          caution: "注意事项",
+          tag: "标签",
+          ingredient: "成分",
+          functional: "功能性"
+        }
+      },
+      "zh-TW": {
+        scanTitle: "掃描商品",
+        detailTitle: "商品資訊",
+        scanGuide: "請輸入條碼進行測試。",
+        scanNotice: "目前為測試輸入方式，之後可接入真實條碼掃描器。",
+        searchBtn: "查詢商品",
+        changeLanguage: "切換語言",
+        back: "返回",
+        scanAgain: "重新查詢",
+        barcodePlaceholder: "輸入測試條碼",
+        loading: "正在載入商品資訊。",
+        alertBarcodeRequired: "請輸入條碼。",
+        alertNotFound: "找不到商品。",
+        alertNetworkError: "發生網路錯誤。",
+        alertApiNotConfigured: "API 位址尚未設定。",
+        noBrand: "無品牌",
+        noCategory: "無分類",
+        labels: {
+          description: "說明",
+          volume: "容量",
+          feature: "特色",
+          usage: "用途",
+          caution: "注意事項",
+          tag: "標籤",
+          ingredient: "成分",
+          functional: "功能性"
+        }
+      }
+    };
+
+    function showScreen(screen) {
+      languageScreen.classList.add("hidden");
+      scanScreen.classList.add("hidden");
+      detailScreen.classList.add("hidden");
+      screen.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    }
+
+    function getCurrentLang() {
+      return localStorage.getItem("lang") || "en";
+    }
+
+    function setLanguage(lang) {
+      localStorage.setItem("lang", lang);
+      applyUITranslations();
+    }
+
+    function clearLanguage() {
+      localStorage.removeItem("lang");
+    }
+
+    function t() {
+      const lang = getCurrentLang();
+      return translations[lang] || translations["en"];
+    }
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.classList.remove("hidden");
+      statusMessage.classList.toggle("error", isError);
+    }
+
+    function hideStatus() {
+      statusMessage.textContent = "";
+      statusMessage.classList.add("hidden");
+      statusMessage.classList.remove("error");
+    }
+
+    function applyUITranslations() {
+      const text = t();
+
+      scanTitle.textContent = text.scanTitle;
+      detailTitle.textContent = text.detailTitle;
+      scanGuideText.textContent = text.scanGuide;
+      scanNotice.textContent = text.scanNotice;
+      searchBtn.textContent = text.searchBtn;
+      changeLanguageFromScan.textContent = text.changeLanguage;
+      changeLanguageFromDetail.textContent = text.changeLanguage;
+      backToScanBtn.textContent = text.back;
+      newScanBtn.textContent = text.scanAgain;
+      barcodeInput.placeholder = text.barcodePlaceholder;
+
+      labelDescription.textContent = text.labels.description;
+      labelVolume.textContent = text.labels.volume;
+      labelFeature.textContent = text.labels.feature;
+      labelUsage.textContent = text.labels.usage;
+      labelCaution.textContent = text.labels.caution;
+      labelTag.textContent = text.labels.tag;
+      labelIngredient.textContent = text.labels.ingredient;
+      labelFunctional.textContent = text.labels.functional;
+    }
+
+    function setSectionValue(element, value) {
+      element.textContent = value && String(value).trim() ? value : "-";
+    }
+
+    function setOptionalSection(sectionEl, valueEl, value) {
+      if (value && String(value).trim()) {
+        valueEl.textContent = value;
+        sectionEl.classList.remove("hidden");
+      } else {
+        valueEl.textContent = "";
+        sectionEl.classList.add("hidden");
+      }
+    }
+
+    function renderProduct(productData) {
+      const text = t();
+
+      const brand = productData.brand && String(productData.brand).trim()
+        ? productData.brand
+        : text.noBrand;
+
+      const category = productData.category && String(productData.category).trim()
+        ? productData.category
+        : text.noCategory;
+
+      const name = productData.name && String(productData.name).trim()
+        ? productData.name
+        : "-";
+
+      productBrand.textContent = brand;
+      productName.textContent = name;
+      productCategoryChip.textContent = category;
+      productSummary.textContent = productData.summary && String(productData.summary).trim()
+        ? productData.summary
+        : "-";
+
+      setSectionValue(productDescription, productData.description);
+      setSectionValue(productVolume, productData.volume);
+      setSectionValue(productFeature, productData.feature);
+      setSectionValue(productUsage, productData.usage);
+      setSectionValue(productCaution, productData.caution);
+      setSectionValue(productTag, productData.tag);
+      setSectionValue(productIngredient, productData.ingredient);
+
+      setOptionalSection(sectionFunctional, productFunctional, productData.functional);
+    }
+
+    function goToLanguageSelect() {
+      clearLanguage();
+      barcodeInput.value = "";
+      hideStatus();
+      showScreen(languageScreen);
+    }
+
+    function goToScan() {
+      applyUITranslations();
+      hideStatus();
+      showScreen(scanScreen);
+    }
+
+    function goToDetail() {
+      applyUITranslations();
+      showScreen(detailScreen);
+    }
+
+    async function searchProductByBarcode() {
+      const barcode = barcodeInput.value.trim();
+      const lang = getCurrentLang();
+      const text = t();
+
+      if (!barcode) {
+        showStatus(text.alertBarcodeRequired, true);
+        return;
+      }
+
+      if (!API_BASE_URL || API_BASE_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        showStatus(text.alertApiNotConfigured, true);
+        return;
+      }
+
+      showStatus(text.loading, false);
+      searchBtn.disabled = true;
+
+      try {
+        const url = `${API_BASE_URL}?barcode=${encodeURIComponent(barcode)}&lang=${encodeURIComponent(lang)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.error) {
+          showStatus(text.alertNotFound, true);
+          return;
+        }
+
+        renderProduct(data);
+        hideStatus();
+        goToDetail();
+      } catch (error) {
+        showStatus(text.alertNetworkError, true);
+      } finally {
+        searchBtn.disabled = false;
+      }
+    }
+
+    document.querySelectorAll(".lang-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        const selectedLang = button.dataset.lang;
+        setLanguage(selectedLang);
+        goToScan();
+      });
+    });
+
+    searchBtn.addEventListener("click", searchProductByBarcode);
+
+    barcodeInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        searchProductByBarcode();
+      }
+    });
+
+    changeLanguageFromScan.addEventListener("click", goToLanguageSelect);
+    changeLanguageFromDetail.addEventListener("click", goToLanguageSelect);
+    backToScanBtn.addEventListener("click", goToScan);
+
+    newScanBtn.addEventListener("click", () => {
+      barcodeInput.value = "";
+      hideStatus();
+      goToScan();
+    });
+
+    function initApp() {
+      const savedLang = localStorage.getItem("lang");
+
+      if (savedLang) {
+        applyUITranslations();
+        showScreen(scanScreen);
+      } else {
+        showScreen(languageScreen);
+      }
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
