@@ -7,9 +7,9 @@
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    /* 사용자님의 기존 CSS 스타일은 완벽해서 그대로 유지합니다 */
     :root { --bg: #f4f6f8; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
@@ -17,27 +17,34 @@
     .hidden { display: none !important; }
     .app-screen { min-height: 100vh; min-height: 100dvh; padding: calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 18px; }
     .screen-inner { width: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+    
     .hero-block { padding-top: 8px; }
     .hero-title { font-size: 30px; line-height: 1.2; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.02em; }
     .hero-desc { margin: 0; color: var(--sub); font-size: 15px; line-height: 1.5; }
+    
     .lang-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
     .lang-btn, .primary-btn, .secondary-btn { width: 100%; min-height: 60px; border: none; border-radius: 16px; padding: 16px 18px; font-size: 18px; font-weight: 700; cursor: pointer; transition: transform 0.12s ease; }
     .lang-btn, .primary-btn { background: var(--primary); color: var(--primary-text); }
     .secondary-btn { background: var(--soft); color: var(--text); }
+    
     .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
     .top-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
     .text-btn { border: none; background: transparent; color: var(--link); font-size: 14px; font-weight: 700; cursor: pointer; padding: 8px 0; }
+    
     .panel { background: var(--surface); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06); }
+    
+    #reader { width: 100%; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 14px; display: none; }
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 18px; background: #fafbfc; min-height: 180px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-bottom: 14px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
-    .field { margin-bottom: 12px; }
+    
     .field input { width: 100%; min-height: 56px; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 16px; outline: none; }
     .status-message { margin-top: 12px; font-size: 14px; color: var(--sub); }
     .status-message.error { color: var(--danger); font-weight: 700; }
+    
     .product-brand { margin: 0 0 6px; font-size: 14px; font-weight: 800; color: #4b5563; }
     .product-name { font-size: 28px; font-weight: 800; margin: 0 0 10px; }
-    .product-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .meta-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 999px; background: #eef2f7; color: #374151; font-size: 13px; font-weight: 700; }
+    .meta-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 999px; background: #eef2f7; color: #374151; font-size: 13px; font-weight: 700; margin-right: 4px; }
+    
     .section { background: var(--surface); border-radius: 18px; padding: 16px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); margin-bottom: 10px; }
     .section-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #4b5563; }
     .section-body { margin: 0; font-size: 15px; line-height: 1.65; white-space: pre-wrap; }
@@ -70,13 +77,17 @@
         <button class="text-btn" id="change-language-from-scan">Change language</button>
       </div>
       <div class="panel">
-        <div class="scan-guide-box">
+        <div id="reader"></div>
+        <div class="scan-guide-box" id="scan-placeholder">
           <p class="scan-guide-text" id="scan-guide-text">Scan the barcode on the product.</p>
         </div>
+        
+        <button class="primary-btn" id="start-camera-btn" style="margin-bottom: 12px;">Open Camera</button>
+        
         <div class="field">
-          <input type="text" id="barcode-input" placeholder="Enter barcode" />
+          <input type="text" id="barcode-input" placeholder="Enter barcode manually" />
         </div>
-        <button class="primary-btn" id="search-btn">Search product</button>
+        <button class="secondary-btn" id="search-btn">Search product</button>
         <p id="status-message" class="status-message hidden"></p>
       </div>
     </div>
@@ -95,7 +106,7 @@
           <span class="meta-chip" id="product-category-chip"></span>
           <span class="meta-chip hidden" id="product-spf-chip"></span>
         </div>
-        <p class="product-summary" id="product-summary"></p>
+        <p class="product-summary" id="product-summary" style="margin-top: 10px; font-size: 15px; color: var(--sub);"></p>
       </div>
       
       <div class="section"><h3 class="section-title" id="label-description">Description</h3><p class="section-body" id="product-description"></p></div>
@@ -115,10 +126,8 @@
   </section>
 
   <script>
-    // 1. Firebase 설정 (초광속 엔진 주소)
-    const firebaseConfig = {
-      databaseURL: "https://scan-korea-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    };
+    // 1. Firebase 설정
+    const firebaseConfig = { databaseURL: "https://scan-korea-default-rtdb.asia-southeast1.firebasedatabase.app/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -129,6 +138,10 @@
     const barcodeInput = document.getElementById("barcode-input");
     const searchBtn = document.getElementById("search-btn");
     const statusMessage = document.getElementById("status-message");
+    const startCameraBtn = document.getElementById("start-camera-btn");
+    const scanPlaceholder = document.getElementById("scan-placeholder");
+    const readerElement = document.getElementById("reader");
+
     const productBrand = document.getElementById("product-brand");
     const productName = document.getElementById("product-name");
     const productCategoryChip = document.getElementById("product-category-chip");
@@ -144,30 +157,43 @@
     const sectionFunctional = document.getElementById("section-functional");
     const productFunctional = document.getElementById("product-functional");
 
+    const backToScanBtn = document.getElementById("back-to-scan-btn");
+    const newScanBtn = document.getElementById("new-scan-btn");
+
+    let html5QrCode;
+
     // 3. 다국어 데이터
     const translations = {
-      "ko": { scanTitle: "상품 스캔", detailTitle: "상세 정보", searchBtn: "조회하기", loading: "조회 중...", alertNotFound: "상품을 찾을 수 없습니다.", labels: { description: "설명", volume: "용량", feature: "특징", usage: "사용법", caution: "주의사항", tag: "태그", ingredient: "성분", functional: "기능성" } },
-      "en": { scanTitle: "Scan", detailTitle: "Details", searchBtn: "Search", loading: "Searching...", alertNotFound: "Not found.", labels: { description: "Description", volume: "Volume", feature: "Features", usage: "How to use", caution: "Caution", tag: "Tags", ingredient: "Ingredients", functional: "Functional" } },
-      "ja": { scanTitle: "スキャン", detailTitle: "詳細", searchBtn: "検索", loading: "検索中...", alertNotFound: "見つかりません。", labels: { description: "説明", volume: "容量", feature: "特徴", usage: "使い方", caution: "注意", tag: "タグ", ingredient: "成分", functional: "機能性" } },
-      "zh-CN": { scanTitle: "扫描", detailTitle: "详情", searchBtn: "查询", loading: "查询中...", alertNotFound: "未找到。", labels: { description: "说明", volume: "容量", feature: "特点", usage: "用法", caution: "注意", tag: "标签", ingredient: "成分", functional: "功能性" } },
-      "zh-TW": { scanTitle: "掃描", detailTitle: "詳情", searchBtn: "查詢", loading: "查詢中...", alertNotFound: "找不到。", labels: { description: "說明", volume: "容量", feature: "特色", usage: "用法", caution: "注意", tag: "標籤", ingredient: "成分", functional: "功能性" } }
+      "ko": { scanTitle: "상품 스캔", detailTitle: "상세 정보", searchBtn: "조회하기", cameraBtn: "카메라 열기", loading: "조회 중...", alertNotFound: "상품을 찾을 수 없습니다.", placeholder: "바코드 번호 직접 입력", labels: { description: "설명", volume: "용량", feature: "특징", usage: "사용법", caution: "주의사항", tag: "태그", ingredient: "성분", functional: "기능성" } },
+      "en": { scanTitle: "Scan", detailTitle: "Details", searchBtn: "Search", cameraBtn: "Open Camera", loading: "Searching...", alertNotFound: "Not found.", placeholder: "Enter barcode manually", labels: { description: "Description", volume: "Volume", feature: "Features", usage: "How to use", caution: "Caution", tag: "Tags", ingredient: "Ingredients", functional: "Functional" } },
+      "ja": { scanTitle: "スキャン", detailTitle: "詳細", searchBtn: "検索", cameraBtn: "カメラ起動", loading: "検索中...", alertNotFound: "見つかりません。", placeholder: "バーコード番号를 직접 입력", labels: { description: "説明", volume: "容量", feature: "特徴", usage: "使い方", caution: "注意", tag: "タグ", ingredient: "成分", functional: "機能性" } },
+      "zh-CN": { scanTitle: "扫描", detailTitle: "详情", searchBtn: "查询", cameraBtn: "开启摄像头", loading: "查询中...", alertNotFound: "未找到。", placeholder: "手动输入条形码", labels: { description: "说明", volume: "容量", feature: "特点", usage: "用法", caution: "注意", tag: "标签", ingredient: "成分", functional: "功能性" } },
+      "zh-TW": { scanTitle: "掃描", detailTitle: "詳情", searchBtn: "查詢", cameraBtn: "開啟攝像頭", loading: "查詢中...", alertNotFound: "找不到。", placeholder: "手動輸入條碼", labels: { description: "說明", volume: "容量", feature: "特色", usage: "用法", caution: "注意", tag: "標籤", ingredient: "成分", functional: "功能性" } }
     };
 
     function getCurrentLang() { return localStorage.getItem("lang") || "en"; }
     function t() { return translations[getCurrentLang()] || translations["en"]; }
 
-    // 4. 데이터 화면 출력 (사용자님의 Firebase 구조인 common / 언어코드 에 최적화)
+    // 4. 화면 출력 로직
     function renderProduct(data) {
       const text = t();
       const lang = getCurrentLang();
       const common = data.common || {};
       const langData = data[lang] || {};
 
+      document.getElementById("label-description").textContent = text.labels.description;
+      document.getElementById("label-volume").textContent = text.labels.volume;
+      document.getElementById("label-feature").textContent = text.labels.feature;
+      document.getElementById("label-usage").textContent = text.labels.usage;
+      document.getElementById("label-caution").textContent = text.labels.caution;
+      document.getElementById("label-tag").textContent = text.labels.tag;
+      document.getElementById("label-ingredient").textContent = text.labels.ingredient;
+      document.getElementById("label-functional").textContent = text.labels.functional;
+
       productBrand.textContent = common.brand || "-";
       productName.textContent = langData.name || "-";
       productCategoryChip.textContent = common.category || "-";
 
-      // SPF/PA 처리 (Firebase에는 spf_pa로 저장됨)
       if (common.spf_pa) {
         productSpfChip.textContent = common.spf_pa;
         productSpfChip.classList.remove("hidden");
@@ -192,7 +218,7 @@
       }
     }
 
-    // 5. 핵심: Firebase 광속 조회 함수
+    // 5. Firebase 조회
     async function searchProductByBarcode() {
       const barcode = barcodeInput.value.trim();
       const text = t();
@@ -202,12 +228,12 @@
       statusMessage.classList.remove("hidden", "error");
       searchBtn.disabled = true;
 
-      // Firebase는 .get() 호출 즉시 응답합니다 (Network 탭에서 확인 가능!)
       db.ref('products/' + barcode).get().then((snapshot) => {
         if (snapshot.exists()) {
           renderProduct(snapshot.val());
           statusMessage.classList.add("hidden");
           showScreen(detailScreen);
+          stopScanning();
         } else {
           statusMessage.textContent = text.alertNotFound;
           statusMessage.classList.add("error");
@@ -220,11 +246,47 @@
       });
     }
 
-    // 6. 이벤트 및 화면 제어
+    // 6. 카메라 제어
+    async function startScanning() {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+      html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        barcodeInput.value = decodedText;
+        searchProductByBarcode();
+      }).then(() => {
+        scanPlaceholder.classList.add("hidden");
+        readerElement.style.display = "block";
+        startCameraBtn.classList.add("hidden");
+      }).catch(err => { console.error("Camera start error:", err); });
+    }
+
+    function stopScanning() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => {
+          scanPlaceholder.classList.remove("hidden");
+          readerElement.style.display = "none";
+          startCameraBtn.classList.remove("hidden");
+        });
+      }
+    }
+
+    // 7. 화면 및 이벤트 제어
     function showScreen(screen) {
       [languageScreen, scanScreen, detailScreen].forEach(s => s.classList.add("hidden"));
       screen.classList.remove("hidden");
       window.scrollTo(0, 0);
+      
+      const text = t();
+      if (screen === scanScreen) {
+        document.getElementById("scan-title").textContent = text.scanTitle;
+        document.getElementById("scan-guide-text").textContent = text.scanTitle + " - Scan the barcode.";
+        searchBtn.textContent = text.searchBtn;
+        barcodeInput.placeholder = text.placeholder;
+        startCameraBtn.textContent = text.cameraBtn; // 카메라 버튼 다국어화 반영
+      } else if (screen === detailScreen) {
+        document.getElementById("detail-title").textContent = text.detailTitle;
+      }
     }
 
     document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -234,11 +296,12 @@
       });
     });
 
+    startCameraBtn.addEventListener("click", startScanning);
     searchBtn.addEventListener("click", searchProductByBarcode);
     barcodeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") searchProductByBarcode(); });
     
-    document.getElementById("change-language-from-scan").addEventListener("click", () => showScreen(languageScreen));
-    document.getElementById("change-language-from-detail").addEventListener("click", () => showScreen(languageScreen));
+    document.getElementById("change-language-from-scan").addEventListener("click", () => { stopScanning(); showScreen(languageScreen); });
+    document.getElementById("change-language-from-detail").addEventListener("click", () => { showScreen(languageScreen); });
     backToScanBtn.addEventListener("click", () => showScreen(scanScreen));
     newScanBtn.addEventListener("click", () => { barcodeInput.value = ""; showScreen(scanScreen); });
 
