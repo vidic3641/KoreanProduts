@@ -277,6 +277,12 @@
       return translations[getCurrentLang()] || translations["en"];
     }
 
+    function resetScanState() {
+      barcodeInput.value = "";
+      statusMessage.textContent = "";
+      statusMessage.classList.add("hidden");
+    }
+
     function renderProduct(data) {
       const text = t();
       const lang = getCurrentLang();
@@ -453,6 +459,7 @@
     document.querySelectorAll(".lang-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         localStorage.setItem("lang", btn.dataset.lang);
+        resetScanState();
         showScreen(scanScreen);
       });
     });
@@ -465,23 +472,24 @@
     
     document.getElementById("change-language-from-scan").addEventListener("click", () => {
       stopScanning();
+      resetScanState();
       showScreen(languageScreen);
     });
 
     document.getElementById("change-language-from-detail").addEventListener("click", () => {
       stopScanning();
+      resetScanState();
       showScreen(languageScreen);
     });
 
     backToScanBtn.addEventListener("click", () => {
       stopScanning();
+      resetScanState();
       showScreen(scanScreen);
     });
 
     newScanBtn.addEventListener("click", () => {
-      barcodeInput.value = "";
-      statusMessage.textContent = "";
-      statusMessage.classList.add("hidden");
+      resetScanState();
       showScreen(scanScreen);
     });
 
