@@ -11,30 +11,39 @@ if (!admin.apps.length) {
 
 module.exports = async (req, res) => {
   try {
-    const { barcode, lang = "ko" } = req.query;
+    const barcode = String(req.query.barcode || "").trim();
+    const lang = String(req.query.lang || "ko").trim();
 
-    if (!/^[0-9]{8,13}$/.test(barcode)) {
-      return res.status(400).json({ error: "invalid" });
+    // 바코드 유효성 검사 (8~14자리 허용)
+    if (!/^[0-9]{8,14}$/.test(barcode)) {
+      return res.status(400).json({ error: "invalid barcode" });
     }
 
     const baseRef = admin.database().ref(`products/${barcode}`);
 
-    const commonSnap = await baseRef.child("common").once("value");
-    const langSnap = await baseRef.child(lang).once("value");
+    // 🔥 핵심: 상품 존재 여부 먼저 체크
+    const productSnap = await baseRef.once("value");
 
-    const data = {
-      ...commonSnap.val(),
-      ...langSnap.val()
-    };
-
-    if (!data) {
+    if (!productSnap.exists()) {
       return res.status(404).json({ error: "not found" });
     }
+
+    const product = productSnap.val();
+
+    // 공통 + 언어 데이터 분리
+    const common = product.common || {};
+    const langData = product[lang] || product.en || product.ko || {};
+
+    // 병합
+    const data = {
+      ...common,
+      ...langData
+    };
 
     return res.status(200).json(data);
 
   } catch (e) {
-    console.error(e);
+    console.error("getProduct error:", e);
     return res.status(500).json({ error: "server error" });
   }
 };
