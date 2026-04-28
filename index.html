@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>ScanKorea MVP</title>
   
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
@@ -116,10 +114,6 @@
   </section>
 
   <script>
-    const firebaseConfig = { databaseURL: "https://scan-korea-default-rtdb.asia-southeast1.firebasedatabase.app/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const languageScreen = document.getElementById("language-screen");
     const scanScreen = document.getElementById("scan-screen");
     const detailScreen = document.getElementById("detail-screen");
@@ -232,7 +226,7 @@
         alertScanMismatch: "条码已识别，但未能匹配到商品信息。",
         alertCameraError: "无法启动摄像头。请检查浏览器摄像头权限。",
         alertUnknown: "发生未知错误。",
-        placeholder: "手动输入条形码",
+        placeholder: "手动输入条码",
         labels: {
           description: "说明",
           volume: "容量",
@@ -329,6 +323,7 @@
     async function searchProductByBarcode(isFromScan = false) {
       const barcode = barcodeInput.value.trim();
       const text = t();
+      const lang = getCurrentLang();
 
       if (!barcode) return;
 
@@ -337,10 +332,17 @@
       searchBtn.disabled = true;
 
       try {
-        const snapshot = await db.ref('products/' + barcode).get();
+        const res = await fetch(`/api/getProduct?barcode=${encodeURIComponent(barcode)}&lang=${encodeURIComponent(lang)}`);
 
-        if (snapshot.exists()) {
-          renderProduct(snapshot.val());
+        if (res.ok) {
+          const product = await res.json();
+
+          const data = {
+            common: product,
+            [lang]: product
+          };
+
+          renderProduct(data);
           statusMessage.classList.add("hidden");
           showScreen(detailScreen);
           await stopScanning();
