@@ -337,12 +337,7 @@
         if (res.ok) {
           const product = await res.json();
 
-          const data = {
-            common: product,
-            [lang]: product
-          };
-
-          renderProduct(data);
+          renderProduct(product);
           statusMessage.classList.add("hidden");
           showScreen(detailScreen);
           await stopScanning();
