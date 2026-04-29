@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>ScanKorea MVP</title>
   
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
 
   <style>
     :root { --bg: #f4f6f8; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; }
@@ -32,10 +32,15 @@
     .panel { background: var(--surface); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06); }
     
     #reader { width: 100%; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 14px; display: none; min-height: 250px; position: relative; }
-    #reader video { width: 100% !important; object-fit: cover !important; }
+    #reader-video { width: 100%; min-height: 250px; object-fit: cover; display: block; background: #000; }
 
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 18px; background: #fafbfc; min-height: 180px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-bottom: 14px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
+
+    .inapp-box { border: 1px solid var(--line); border-radius: 18px; background: #fafbfc; padding: 18px; margin-bottom: 14px; text-align: center; }
+    .inapp-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+    .inapp-desc { margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: var(--sub); }
+    .small-note { margin: 10px 0 0; font-size: 13px; color: var(--sub); line-height: 1.5; }
     
     .field input { width: 100%; min-height: 56px; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 16px; outline: none; }
     .status-message { margin-top: 12px; font-size: 14px; color: var(--sub); }
@@ -74,7 +79,17 @@
         <button class="text-btn" id="change-language-from-scan">Change language</button>
       </div>
       <div class="panel">
-        <div id="reader"></div>
+        <div id="inapp-box" class="inapp-box hidden">
+          <p class="inapp-title" id="inapp-title">Open in browser</p>
+          <p class="inapp-desc" id="inapp-desc">For accurate scanning, please open this page in Safari or Chrome.</p>
+          <button class="primary-btn" id="copy-url-btn" type="button">Copy link</button>
+          <p class="small-note" id="inapp-note">After copying, open Safari or Chrome and paste the link.</p>
+        </div>
+
+        <div id="reader">
+          <video id="reader-video" muted playsinline></video>
+        </div>
+
         <div class="scan-guide-box" id="scan-placeholder">
           <p class="scan-guide-text" id="scan-guide-text">Scan the barcode on the product.</p>
         </div>
@@ -123,6 +138,9 @@
     const startCameraBtn = document.getElementById("start-camera-btn");
     const scanPlaceholder = document.getElementById("scan-placeholder");
     const readerElement = document.getElementById("reader");
+    const readerVideo = document.getElementById("reader-video");
+    const inAppBox = document.getElementById("inapp-box");
+    const copyUrlBtn = document.getElementById("copy-url-btn");
 
     const productBrand = document.getElementById("product-brand");
     const productName = document.getElementById("product-name");
@@ -142,8 +160,14 @@
     const backToScanBtn = document.getElementById("back-to-scan-btn");
     const newScanBtn = document.getElementById("new-scan-btn");
 
-    let html5QrCode = null;
+    let mediaStream = null;
+    let barcodeDetector = null;
+    let barcodeDetectorTimer = null;
+    let zxingReader = null;
+    let zxingControls = null;
     let isProcessingScan = false;
+    let pendingQrTimer = null;
+    let pendingQrValue = "";
 
     const translations = {
       "ko": {
@@ -158,6 +182,11 @@
         alertCameraError: "카메라를 실행할 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.",
         alertUnknown: "알 수 없는 오류가 발생했습니다.",
         placeholder: "바코드 번호 직접 입력",
+        inAppTitle: "브라우저에서 열어주세요",
+        inAppDesc: "정확한 스캔을 위해 Safari 또는 Chrome에서 열어주세요.",
+        copyLink: "주소 복사하기",
+        copied: "주소가 복사되었습니다.",
+        inAppNote: "복사 후 Safari 또는 Chrome 주소창에 붙여넣어주세요.",
         labels: {
           description: "설명",
           volume: "용량",
@@ -181,6 +210,11 @@
         alertCameraError: "Unable to start camera. Please check browser camera permissions.",
         alertUnknown: "An unknown error occurred.",
         placeholder: "Enter barcode manually",
+        inAppTitle: "Open in browser",
+        inAppDesc: "For accurate scanning, please open this page in Safari or Chrome.",
+        copyLink: "Copy link",
+        copied: "Link copied.",
+        inAppNote: "After copying, open Safari or Chrome and paste the link.",
         labels: {
           description: "Description",
           volume: "Volume",
@@ -204,6 +238,11 @@
         alertCameraError: "カメラを起動できません。ブラウザのカメラ権限を確認してください。",
         alertUnknown: "不明なエラーが発生しました。",
         placeholder: "バーコード番号を直接入力",
+        inAppTitle: "ブラウザで開いてください",
+        inAppDesc: "正確にスキャンするため、SafariまたはChromeで開いてください。",
+        copyLink: "リンクをコピー",
+        copied: "リンクをコピーしました。",
+        inAppNote: "コピー後、SafariまたはChromeのアドレスバーに貼り付けてください。",
         labels: {
           description: "説明",
           volume: "容量",
@@ -227,6 +266,11 @@
         alertCameraError: "无法启动摄像头。请检查浏览器摄像头权限。",
         alertUnknown: "发生未知错误。",
         placeholder: "手动输入条码",
+        inAppTitle: "请在浏览器中打开",
+        inAppDesc: "为了准确扫描，请在 Safari 或 Chrome 中打开此页面。",
+        copyLink: "复制链接",
+        copied: "链接已复制。",
+        inAppNote: "复制后，请在 Safari 或 Chrome 地址栏中粘贴打开。",
         labels: {
           description: "说明",
           volume: "容量",
@@ -250,6 +294,11 @@
         alertCameraError: "無法啟動攝像頭。請檢查瀏覽器攝像頭權限。",
         alertUnknown: "發生未知錯誤。",
         placeholder: "手動輸入條碼",
+        inAppTitle: "請在瀏覽器中開啟",
+        inAppDesc: "為了準確掃描，請在 Safari 或 Chrome 中開啟此頁面。",
+        copyLink: "複製連結",
+        copied: "連結已複製。",
+        inAppNote: "複製後，請在 Safari 或 Chrome 的網址列貼上開啟。",
         labels: {
           description: "說明",
           volume: "容量",
@@ -271,10 +320,112 @@
       return translations[getCurrentLang()] || translations["en"];
     }
 
+    function isIOS() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    function isInAppBrowser() {
+      const ua = navigator.userAgent || "";
+      return /Instagram|FBAN|FBAV|TikTok|Bytedance|Musical_ly|YouTube|Line|KAKAOTALK|MicroMessenger|Twitter|XiaoHongShu|XHS/i.test(ua);
+    }
+
+    function updateInAppBoxText() {
+      const text = t();
+      document.getElementById("inapp-title").textContent = text.inAppTitle;
+      document.getElementById("inapp-desc").textContent = text.inAppDesc;
+      document.getElementById("inapp-note").textContent = text.inAppNote;
+      copyUrlBtn.textContent = text.copyLink;
+    }
+
+    function updateInAppVisibility() {
+      if (isInAppBrowser()) {
+        inAppBox.classList.remove("hidden");
+        scanPlaceholder.classList.add("hidden");
+        readerElement.style.display = "none";
+        startCameraBtn.classList.add("hidden");
+      } else {
+        inAppBox.classList.add("hidden");
+        scanPlaceholder.classList.remove("hidden");
+        startCameraBtn.classList.remove("hidden");
+      }
+    }
+
+    function normalizeScannedCode(rawValue) {
+      const value = String(rawValue || "").trim();
+      const match = value.match(/\d{8,14}/);
+      return match ? match[0] : value;
+    }
+
+    function getBarcodeCandidates(rawValue) {
+      const normalized = normalizeScannedCode(rawValue);
+      if (!normalized) return [];
+
+      const candidates = [normalized];
+
+      if (/^\d{12}$/.test(normalized)) {
+        candidates.push("0" + normalized);
+      }
+
+      return [...new Set(candidates)];
+    }
+
+    function isQrScan(rawValue, format) {
+      const f = String(format || "").toLowerCase();
+      const value = String(rawValue || "").trim();
+
+      return (
+        f.includes("qr") ||
+        /^https?:\/\//i.test(value) ||
+        value.includes("://")
+      );
+    }
+
+    function clearPendingQr() {
+      if (pendingQrTimer) {
+        clearTimeout(pendingQrTimer);
+        pendingQrTimer = null;
+      }
+      pendingQrValue = "";
+    }
+
+    function processScannedValue(rawValue) {
+      if (isProcessingScan) return;
+
+      const code = normalizeScannedCode(rawValue);
+      if (!code) return;
+
+      isProcessingScan = true;
+      barcodeInput.value = code;
+      searchProductByBarcode(true);
+    }
+
+    function handleDetectedCode(rawValue, format = "") {
+      if (isProcessingScan) return;
+
+      if (isQrScan(rawValue, format)) {
+        pendingQrValue = rawValue;
+
+        if (!pendingQrTimer) {
+          pendingQrTimer = setTimeout(() => {
+            const value = pendingQrValue;
+            clearPendingQr();
+            processScannedValue(value);
+          }, 500);
+        }
+
+        return;
+      }
+
+      clearPendingQr();
+      processScannedValue(rawValue);
+    }
+
     function resetScanState() {
       barcodeInput.value = "";
       statusMessage.textContent = "";
       statusMessage.classList.add("hidden");
+      clearPendingQr();
+      isProcessingScan = false;
     }
 
     function renderProduct(data) {
@@ -321,23 +472,32 @@
     }
 
     async function searchProductByBarcode(isFromScan = false) {
-      const barcode = barcodeInput.value.trim();
+      const rawBarcode = barcodeInput.value.trim();
+      const candidates = getBarcodeCandidates(rawBarcode);
       const text = t();
       const lang = getCurrentLang();
 
-      if (!barcode) return;
+      if (!candidates.length) return;
 
       statusMessage.textContent = text.loading;
       statusMessage.classList.remove("hidden", "error");
       searchBtn.disabled = true;
 
       try {
-        const res = await fetch(`/api/getProduct?barcode=${encodeURIComponent(barcode)}&lang=${encodeURIComponent(lang)}`);
+        let matchedProduct = null;
 
-        if (res.ok) {
-          const product = await res.json();
+        for (const barcode of candidates) {
+          const res = await fetch(`/api/getProduct?barcode=${encodeURIComponent(barcode)}&lang=${encodeURIComponent(lang)}`);
 
-          renderProduct(product);
+          if (res.ok) {
+            matchedProduct = await res.json();
+            barcodeInput.value = barcode;
+            break;
+          }
+        }
+
+        if (matchedProduct) {
+          renderProduct(matchedProduct);
           statusMessage.classList.add("hidden");
           showScreen(detailScreen);
           await stopScanning();
@@ -366,49 +526,125 @@
       }
     }
 
+    function getCameraConstraints() {
+      return {
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      };
+    }
+
+    async function prepareVideoStream() {
+      mediaStream = await navigator.mediaDevices.getUserMedia(getCameraConstraints());
+      readerVideo.srcObject = mediaStream;
+      await readerVideo.play();
+
+      const track = mediaStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        try {
+          await track.applyConstraints({
+            advanced: [{ focusMode: "continuous" }]
+          });
+        } catch (e) {}
+      }
+    }
+
+    async function startBarcodeDetectorScanning() {
+      barcodeDetector = new BarcodeDetector({
+        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "qr_code", "code_128"]
+      });
+
+      const scan = async () => {
+        if (!barcodeDetector || isProcessingScan || !readerVideo.srcObject) return;
+
+        try {
+          const results = await barcodeDetector.detect(readerVideo);
+
+          if (results && results.length) {
+            const priority = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"];
+            let selected = null;
+
+            for (const format of priority) {
+              selected = results.find(item => String(item.format).toLowerCase() === format);
+              if (selected) break;
+            }
+
+            if (selected) {
+              handleDetectedCode(selected.rawValue, selected.format);
+            }
+          }
+        } catch (e) {}
+
+        barcodeDetectorTimer = requestAnimationFrame(scan);
+      };
+
+      barcodeDetectorTimer = requestAnimationFrame(scan);
+    }
+
+    async function startZxingScanning() {
+      if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
+        throw new Error("ZXing is not loaded");
+      }
+
+      zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
+
+      zxingControls = await zxingReader.decodeFromConstraints(
+        getCameraConstraints(),
+        readerVideo,
+        (result) => {
+          if (!result || isProcessingScan) return;
+
+          const rawValue = result.getText ? result.getText() : String(result.text || "");
+          const format = result.getBarcodeFormat ? String(result.getBarcodeFormat()) : "";
+
+          handleDetectedCode(rawValue, format);
+        }
+      );
+    }
+
     async function startScanning() {
       const text = t();
+
+      if (isInAppBrowser()) {
+        updateInAppBoxText();
+        updateInAppVisibility();
+        statusMessage.classList.add("hidden");
+        return;
+      }
+
       statusMessage.textContent = text.cameraLoading;
       statusMessage.classList.remove("hidden", "error");
       isProcessingScan = false;
+      clearPendingQr();
       
       try {
-        if (html5QrCode) {
-          try { await html5QrCode.stop(); } catch (e) {}
-        }
-        
-        html5QrCode = new Html5Qrcode("reader");
-        
-        const config = { 
-          fps: 20, 
-          qrbox: { width: 280, height: 160 },
-          videoConstraints: {
-            facingMode: "environment",
-            focusMode: "continuous",
-            width: { min: 640, ideal: 1280 },
-            height: { min: 480, ideal: 720 }
-          }
-        };
+        await stopScanning();
 
         scanPlaceholder.classList.add("hidden");
         readerElement.style.display = "block";
         startCameraBtn.classList.add("hidden");
 
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText) => {
-            if (isProcessingScan) return;
-            isProcessingScan = true;
-            barcodeInput.value = decodedText;
-            searchProductByBarcode(true);
-          }
-        ).then(() => {
-          statusMessage.classList.add("hidden");
-        });
+        const canUseBarcodeDetector = "BarcodeDetector" in window && !isIOS();
+
+        if (canUseBarcodeDetector) {
+          await prepareVideoStream();
+          await startBarcodeDetectorScanning();
+        } else {
+          await startZxingScanning();
+        }
+
+        statusMessage.classList.add("hidden");
 
       } catch (err) {
         console.error("Camera Error:", err);
+
+        try {
+          await stopScanning();
+        } catch (e) {}
+
         statusMessage.textContent = text.alertCameraError;
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
@@ -420,19 +656,36 @@
     }
 
     async function stopScanning() {
-      if (html5QrCode && html5QrCode.isScanning) {
-        await html5QrCode.stop().then(() => {
-          scanPlaceholder.classList.remove("hidden");
-          readerElement.style.display = "none";
-          startCameraBtn.classList.remove("hidden");
-          isProcessingScan = false;
-        }).catch(err => {
-          console.warn("Stop Error:", err);
-          isProcessingScan = false;
-        });
-      } else {
-        isProcessingScan = false;
+      clearPendingQr();
+
+      if (barcodeDetectorTimer) {
+        cancelAnimationFrame(barcodeDetectorTimer);
+        barcodeDetectorTimer = null;
       }
+
+      barcodeDetector = null;
+
+      if (zxingControls) {
+        try { zxingControls.stop(); } catch (e) {}
+        zxingControls = null;
+      }
+
+      zxingReader = null;
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+
+      if (readerVideo) {
+        readerVideo.pause();
+        readerVideo.srcObject = null;
+      }
+
+      scanPlaceholder.classList.remove("hidden");
+      readerElement.style.display = "none";
+      startCameraBtn.classList.remove("hidden");
+      isProcessingScan = false;
     }
 
     function showScreen(screen) {
@@ -447,7 +700,9 @@
         document.getElementById("scan-guide-text").textContent = text.scanTitle + " - Scan the barcode.";
         searchBtn.textContent = text.searchBtn;
         barcodeInput.placeholder = text.placeholder;
-        startCameraBtn.textContent = text.cameraBtn; 
+        startCameraBtn.textContent = text.cameraBtn;
+        updateInAppBoxText();
+        updateInAppVisibility();
       } else if (screen === detailScreen) {
         document.getElementById("detail-title").textContent = text.detailTitle;
       }
@@ -465,6 +720,21 @@
     searchBtn.addEventListener("click", () => searchProductByBarcode(false));
     barcodeInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") searchProductByBarcode(false);
+    });
+
+    copyUrlBtn.addEventListener("click", async () => {
+      const text = t();
+
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        statusMessage.textContent = text.copied;
+        statusMessage.classList.remove("hidden", "error");
+      } catch (err) {
+        barcodeInput.value = window.location.href;
+        barcodeInput.select();
+        statusMessage.textContent = text.copied;
+        statusMessage.classList.remove("hidden", "error");
+      }
     });
     
     document.getElementById("change-language-from-scan").addEventListener("click", () => {
