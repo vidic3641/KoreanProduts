@@ -1,5 +1,5 @@
-const ADMIN_UPLOAD_URL = "https://너의-vercel-도메인.vercel.app/api/adminUpload";
-const ADMIN_SECRET = "너만아는_긴_비밀키";
+const ADMIN_UPLOAD_URL = "https://korean-produts.vercel.app/api/adminUpload";
+const ADMIN_SECRET = "!Nemanja_Vidic15.Xabi_Alonso14.IncheonUnited";
 const CHUNK_SIZE = 1000;
 
 function onOpen() {
