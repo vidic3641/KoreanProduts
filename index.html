@@ -199,6 +199,8 @@
         scanGuide: "상품의 바코드를 스캔해 주세요.",
         changeLanguage: "Change language",
         detailTitle: "상세 정보",
+        backBtn: "뒤로가기",
+        newScanBtn: "다시 스캔하기",
         searchBtn: "조회하기",
         cameraBtn: "카메라 열기",
         loading: "조회 중...",
@@ -230,6 +232,8 @@
         scanGuide: "Scan the barcode on the product.",
         changeLanguage: "Change language",
         detailTitle: "Details",
+        backBtn: "Back",
+        newScanBtn: "Scan again",
         searchBtn: "Search",
         cameraBtn: "Open Camera",
         loading: "Searching...",
@@ -261,6 +265,8 @@
         scanGuide: "商品のバーコードをスキャンしてください。",
         changeLanguage: "Change language",
         detailTitle: "詳細",
+        backBtn: "戻る",
+        newScanBtn: "もう一度スキャン",
         searchBtn: "検索",
         cameraBtn: "カメラ起動",
         loading: "検索中...",
@@ -292,6 +298,8 @@
         scanGuide: "请扫描商品上的条形码。",
         changeLanguage: "Change language",
         detailTitle: "详情",
+        backBtn: "返回",
+        newScanBtn: "重新扫描",
         searchBtn: "查询",
         cameraBtn: "开启摄像头",
         loading: "查询中...",
@@ -323,6 +331,8 @@
         scanGuide: "請掃描商品上的條碼。",
         changeLanguage: "Change language",
         detailTitle: "詳情",
+        backBtn: "返回",
+        newScanBtn: "重新掃描",
         searchBtn: "查詢",
         cameraBtn: "開啟攝像頭",
         loading: "查詢中...",
@@ -748,6 +758,8 @@
       } else if (screen === detailScreen) {
         document.getElementById("detail-title").textContent = text.detailTitle;
         document.getElementById("change-language-from-detail").textContent = text.changeLanguage;
+        backToScanBtn.textContent = text.backBtn;
+        newScanBtn.textContent = text.newScanBtn;
       }
     }
 
