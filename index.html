@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>ScanKorea MVP</title>
+
+  <!-- 이름 변경 반영 -->
+  <title>Korean Product Scanner for Travelers | Korean Product Guide</title>
+
+  <meta name="description" content="Scan Korean product barcodes and read product information in English, Japanese, Chinese, and Korean. A Korean product guide for travelers.">
+
+  <meta property="og:title" content="Korean Product Guide">
+  <meta property="og:description" content="Scan Korean products and understand product information in your language.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://korean-products-guide.vercel.app">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Korean Product Guide">
+  <meta name="twitter:description" content="Scan Korean products and understand product information in your language.">
   
   <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
 
@@ -61,7 +74,10 @@
 
   <section id="language-screen" class="app-screen">
     <div class="screen-inner">
-      <div class="hero-block"><h1 class="hero-title">Choose your language</h1><p class="hero-desc">Please select your preferred language to continue.</p></div>
+      <div class="hero-block">
+        <h1 class="hero-title">Scan Korean Products in Your Language</h1>
+        <p class="hero-desc">Choose your language to read Korean product information instantly.</p>
+      </div>
       <div class="lang-list">
         <button class="lang-btn" data-lang="ko">한국어</button>
         <button class="lang-btn" data-lang="en">English</button>
@@ -116,14 +132,22 @@
         </div>
         <p class="product-summary" id="product-summary" style="margin-top: 10px; font-size: 15px; color: var(--sub);"></p>
       </div>
+      <!-- 순서 조정: Description -> Volume -> Features -> How to use -> Caution -> Tags 순 -->
       <div class="section"><h3 class="section-title" id="label-description">Description</h3><p class="section-body" id="product-description"></p></div>
       <div class="section"><h3 class="section-title" id="label-volume">Volume</h3><p class="section-body" id="product-volume"></p></div>
       <div class="section"><h3 class="section-title" id="label-feature">Features</h3><p class="section-body" id="product-feature"></p></div>
       <div class="section"><h3 class="section-title" id="label-usage">How to use</h3><p class="section-body" id="product-usage"></p></div>
       <div class="section"><h3 class="section-title" id="label-caution">Caution</h3><p class="section-body" id="product-caution"></p></div>
       <div class="section"><h3 class="section-title" id="label-tag">Tags</h3><p class="section-body" id="product-tag"></p></div>
-      <div class="section"><h3 class="section-title" id="label-ingredient">Ingredients</h3><p class="section-body" id="product-ingredient"></p></div>
       <div class="section hidden" id="section-functional"><h3 class="section-title" id="label-functional">Functional</h3><p class="section-body" id="product-functional"></p></div>
+      
+      <!-- 성분 섹션을 가장 하단으로 이동 및 주의사항 추가 -->
+      <div class="section">
+        <h3 class="section-title" id="label-ingredient">Ingredients</h3>
+        <p class="section-body" id="product-ingredient"></p>
+        <p id="ingredient-disclaimer" style="margin-top: 12px; font-size: 13px; color: var(--sub); line-height: 1.5;"></p>
+      </div>
+
       <div class="bottom-actions"><button class="secondary-btn" id="back-to-scan-btn">Back</button><button class="primary-btn" id="new-scan-btn">Scan again</button></div>
     </div>
   </section>
@@ -172,6 +196,8 @@
     const translations = {
       "ko": {
         scanTitle: "상품 스캔",
+        scanGuide: "상품의 바코드를 스캔해 주세요.",
+        changeLanguage: "Change language",
         detailTitle: "상세 정보",
         searchBtn: "조회하기",
         cameraBtn: "카메라 열기",
@@ -195,11 +221,14 @@
           caution: "주의사항",
           tag: "태그",
           ingredient: "성분",
-          functional: "기능성"
+          functional: "기능성",
+          disclaimer: "성분 정보는 실제와 다를 수 있습니다. 사용 전 반드시 제품 라벨을 확인해 주세요."
         }
       },
       "en": {
-        scanTitle: "Scan",
+        scanTitle: "Scan Product",
+        scanGuide: "Scan the barcode on the product.",
+        changeLanguage: "Change language",
         detailTitle: "Details",
         searchBtn: "Search",
         cameraBtn: "Open Camera",
@@ -223,11 +252,14 @@
           caution: "Caution",
           tag: "Tags",
           ingredient: "Ingredients",
-          functional: "Functional"
+          functional: "Functional",
+          disclaimer: "Ingredient information may not be fully accurate. Please refer to the actual product label before use."
         }
       },
       "ja": {
         scanTitle: "スキャン",
+        scanGuide: "商品のバーコードをスキャンしてください。",
+        changeLanguage: "Change language",
         detailTitle: "詳細",
         searchBtn: "検索",
         cameraBtn: "カメラ起動",
@@ -251,11 +283,14 @@
           caution: "注意",
           tag: "タグ",
           ingredient: "成分",
-          functional: "機能性"
+          functional: "機能性",
+          disclaimer: "成分表示は実際の内容と異なる場合があります。使用前に必ず実物のラベルをご確認ください。"
         }
       },
       "cn": {
         scanTitle: "扫描",
+        scanGuide: "请扫描商品上的条形码。",
+        changeLanguage: "Change language",
         detailTitle: "详情",
         searchBtn: "查询",
         cameraBtn: "开启摄像头",
@@ -279,11 +314,14 @@
           caution: "注意",
           tag: "标签",
           ingredient: "成分",
-          functional: "功能性"
+          functional: "功能性",
+          disclaimer: "成分信息仅供参考，可能与实际不符。使用前请务必核对产品包装上的标签。"
         }
       },
       "tw": {
         scanTitle: "掃描",
+        scanGuide: "請掃描商品上的條碼。",
+        changeLanguage: "Change language",
         detailTitle: "詳情",
         searchBtn: "查詢",
         cameraBtn: "開啟攝像頭",
@@ -307,7 +345,8 @@
           caution: "注意",
           tag: "標籤",
           ingredient: "成分",
-          functional: "功能性"
+          functional: "功能性",
+          disclaimer: "成分資訊僅供參考，可能與實際不符。使用前請務必核對產品包裝上的標籤。"
         }
       }
     };
@@ -442,6 +481,8 @@
       document.getElementById("label-tag").textContent = text.labels.tag;
       document.getElementById("label-ingredient").textContent = text.labels.ingredient;
       document.getElementById("label-functional").textContent = text.labels.functional;
+      // 주의사항 텍스트 설정
+      document.getElementById("ingredient-disclaimer").textContent = text.labels.disclaimer;
 
       productBrand.textContent = common.brand || "-";
       productName.textContent = langData.name || "-";
@@ -697,7 +738,8 @@
 
       if (screen === scanScreen) {
         document.getElementById("scan-title").textContent = text.scanTitle;
-        document.getElementById("scan-guide-text").textContent = text.scanTitle + " - Scan the barcode.";
+        document.getElementById("scan-guide-text").textContent = text.scanGuide;
+        document.getElementById("change-language-from-scan").textContent = text.changeLanguage;
         searchBtn.textContent = text.searchBtn;
         barcodeInput.placeholder = text.placeholder;
         startCameraBtn.textContent = text.cameraBtn;
@@ -705,6 +747,7 @@
         updateInAppVisibility();
       } else if (screen === detailScreen) {
         document.getElementById("detail-title").textContent = text.detailTitle;
+        document.getElementById("change-language-from-detail").textContent = text.changeLanguage;
       }
     }
 
