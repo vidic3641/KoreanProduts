@@ -369,6 +369,33 @@
       return translations[getCurrentLang()] || translations["en"];
     }
 
+    function isSupportedLang(lang) {
+      return Object.prototype.hasOwnProperty.call(translations, lang);
+    }
+
+    function updateProductUrl(barcode, lang) {
+      const cleanBarcode = String(barcode || "").trim();
+      const cleanLang = isSupportedLang(lang) ? lang : "en";
+
+      if (!cleanBarcode) return;
+
+      const newUrl = `${window.location.pathname}?barcode=${encodeURIComponent(cleanBarcode)}&lang=${encodeURIComponent(cleanLang)}`;
+      history.pushState({ barcode: cleanBarcode, lang: cleanLang }, "", newUrl);
+    }
+
+    function clearProductUrl() {
+      const cleanUrl = window.location.pathname;
+      history.replaceState({}, "", cleanUrl);
+    }
+
+    function getProductParamsFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const barcode = String(params.get("barcode") || "").trim();
+      const lang = String(params.get("lang") || "").trim();
+
+      return { barcode, lang };
+    }
+
     function isIOS() {
       return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
@@ -543,6 +570,7 @@
           if (res.ok) {
             matchedProduct = await res.json();
             barcodeInput.value = barcode;
+            updateProductUrl(barcode, lang);
             break;
           }
         }
@@ -766,6 +794,7 @@
     document.querySelectorAll(".lang-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         localStorage.setItem("lang", btn.dataset.lang);
+        clearProductUrl();
         resetScanState();
         showScreen(scanScreen);
       });
@@ -794,31 +823,70 @@
     
     document.getElementById("change-language-from-scan").addEventListener("click", () => {
       stopScanning();
+      clearProductUrl();
       resetScanState();
       showScreen(languageScreen);
     });
 
     document.getElementById("change-language-from-detail").addEventListener("click", () => {
       stopScanning();
+      clearProductUrl();
       resetScanState();
       showScreen(languageScreen);
     });
 
     backToScanBtn.addEventListener("click", () => {
       stopScanning();
+      clearProductUrl();
       resetScanState();
       showScreen(scanScreen);
     });
 
     newScanBtn.addEventListener("click", () => {
+      clearProductUrl();
       resetScanState();
       showScreen(scanScreen);
     });
 
-    function initApp() {
+    async function initApp() {
+      const urlParams = getProductParamsFromUrl();
+
+      if (urlParams.lang && isSupportedLang(urlParams.lang)) {
+        localStorage.setItem("lang", urlParams.lang);
+      }
+
+      if (urlParams.barcode) {
+        if (!localStorage.getItem("lang")) {
+          localStorage.setItem("lang", "en");
+        }
+
+        showScreen(scanScreen);
+        barcodeInput.value = urlParams.barcode;
+        await searchProductByBarcode(false);
+        return;
+      }
+
       if (localStorage.getItem("lang")) showScreen(scanScreen);
       else showScreen(languageScreen);
     }
+
+    window.addEventListener("popstate", async () => {
+      const urlParams = getProductParamsFromUrl();
+
+      if (urlParams.lang && isSupportedLang(urlParams.lang)) {
+        localStorage.setItem("lang", urlParams.lang);
+      }
+
+      if (urlParams.barcode) {
+        resetScanState();
+        showScreen(scanScreen);
+        barcodeInput.value = urlParams.barcode;
+        await searchProductByBarcode(false);
+      } else {
+        resetScanState();
+        showScreen(scanScreen);
+      }
+    });
 
     initApp();
   </script>
