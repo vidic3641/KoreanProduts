@@ -54,6 +54,20 @@
     .panel { background: var(--surface); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06); }
     
     #reader { width: 100%; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 14px; display: none; min-height: 250px; position: relative; }
+    #reader::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 40%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 12px;
+      box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 10;
+    }
     #reader-video { width: 100%; min-height: 250px; object-fit: cover; display: block; background: #000; }
 
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 18px; background: #fafbfc; min-height: 180px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-bottom: 14px; }
@@ -378,6 +392,19 @@
       return translations[getCurrentLang()] || translations["en"];
     }
 
+    function trackEvent(eventName, properties = {}) {
+      if (!window.posthog || typeof window.posthog.capture !== "function") return;
+
+      try {
+        window.posthog.capture(eventName, {
+          lang: getCurrentLang(),
+          path: window.location.pathname,
+          url: window.location.href,
+          ...properties
+        });
+      } catch (e) {}
+    }
+
     function isSupportedLang(lang) {
       return Object.prototype.hasOwnProperty.call(translations, lang);
     }
@@ -487,6 +514,11 @@
 
       isProcessingScan = true;
       barcodeInput.value = code;
+
+      trackEvent("barcode_scanned", {
+        barcode: code
+      });
+
       searchProductByBarcode(true);
     }
 
@@ -586,17 +618,40 @@
             matchedProduct = await res.json();
             barcodeInput.value = barcode;
             updateProductUrl(barcode, lang);
+
+            trackEvent("product_found", {
+              barcode,
+              brand: matchedProduct.common?.brand || "",
+              category: matchedProduct.common?.category || "",
+              source: isFromScan ? "scan" : "manual_or_url"
+            });
+
             break;
           }
         }
 
         if (matchedProduct) {
           renderProduct(matchedProduct);
+
+          trackEvent("product_detail_viewed", {
+            barcode: barcodeInput.value.trim(),
+            brand: matchedProduct.common?.brand || "",
+            category: matchedProduct.common?.category || "",
+            source: isFromScan ? "scan" : "manual_or_url"
+          });
+
           statusMessage.classList.add("hidden");
           showScreen(detailScreen);
           await stopScanning();
           return;
         }
+
+        trackEvent("product_not_found", {
+          barcode: rawBarcode,
+          candidates,
+          input_length: rawBarcode.length,
+          source: isFromScan ? "scan" : "manual_or_url"
+        });
 
         if (isFromScan) {
           statusMessage.textContent = text.alertScanMismatch + " " + text.alertDbMissing;
@@ -703,6 +758,9 @@
       const text = t();
 
       if (isInAppBrowser()) {
+        trackEvent("inapp_browser_detected", {
+          user_agent: navigator.userAgent || ""
+        });
         updateInAppBoxText();
         updateInAppVisibility();
         statusMessage.classList.add("hidden");
@@ -730,10 +788,19 @@
           await startZxingScanning();
         }
 
+        trackEvent("camera_started", {
+          engine: canUseBarcodeDetector ? "barcode_detector" : "zxing",
+          is_ios: isIOS()
+        });
+
         statusMessage.classList.add("hidden");
 
       } catch (err) {
         console.error("Camera Error:", err);
+
+        trackEvent("camera_error", {
+          error_message: err.message
+        });
 
         try {
           await stopScanning();
@@ -808,17 +875,56 @@
 
     document.querySelectorAll(".lang-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        localStorage.setItem("lang", btn.dataset.lang);
+        const selectedLang = btn.dataset.lang;
+
+        localStorage.setItem("lang", selectedLang);
+
+        trackEvent("language_selected", {
+          selected_lang: selectedLang,
+          selected_lang_name: {
+            ko: "Korean",
+            en: "English",
+            ja: "Japanese",
+            cn: "Chinese(S)",
+            tw: "Chinese(T)"
+          }[selectedLang] || "Unknown"
+        });
+
         clearProductUrl();
         resetScanState();
         showScreen(scanScreen);
       });
     });
 
-    startCameraBtn.addEventListener("click", startScanning);
-    searchBtn.addEventListener("click", () => searchProductByBarcode(false));
+    startCameraBtn.addEventListener("click", () => {
+      trackEvent("camera_opened");
+      startScanning();
+    });
+
+    searchBtn.addEventListener("click", () => {
+      const manualBarcode = barcodeInput.value.trim();
+
+      if (manualBarcode) {
+        trackEvent("barcode_manual_search", {
+          barcode: manualBarcode
+        });
+      }
+
+      searchProductByBarcode(false);
+    });
+
     barcodeInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") searchProductByBarcode(false);
+      if (e.key === "Enter") {
+        const manualBarcode = barcodeInput.value.trim();
+
+        if (manualBarcode) {
+          trackEvent("barcode_manual_search", {
+            barcode: manualBarcode
+          });
+        }
+
+        searchProductByBarcode(false);
+      }
     });
 
     copyUrlBtn.addEventListener("click", async () => {
@@ -851,6 +957,7 @@
     });
 
     backToScanBtn.addEventListener("click", () => {
+      trackEvent("back_to_scan_clicked");
       stopScanning();
       clearProductUrl();
       resetScanState();
@@ -858,6 +965,7 @@
     });
 
     newScanBtn.addEventListener("click", () => {
+      trackEvent("scan_again_clicked");
       clearProductUrl();
       resetScanState();
       showScreen(scanScreen);
