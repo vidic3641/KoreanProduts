@@ -380,7 +380,13 @@
       if (!cleanBarcode) return;
 
       const newUrl = `${window.location.pathname}?barcode=${encodeURIComponent(cleanBarcode)}&lang=${encodeURIComponent(cleanLang)}`;
-      history.pushState({ barcode: cleanBarcode, lang: cleanLang }, "", newUrl);
+      const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+      if (currentUrl === newUrl) {
+        history.replaceState({ barcode: cleanBarcode, lang: cleanLang }, "", newUrl);
+      } else {
+        history.pushState({ barcode: cleanBarcode, lang: cleanLang }, "", newUrl);
+      }
     }
 
     function clearProductUrl() {
