@@ -1431,12 +1431,12 @@
         });
 
         if (!response.ok) {
-          let errorCode = "";
+          let errorCode = `http_${response.status}`;
           try {
             const errorData = await response.json();
-            errorCode = errorData.code || "";
+            errorCode = errorData.code || errorCode;
           } catch (e) {}
-          throw new Error(errorCode || "feedback failed");
+          throw new Error(errorCode);
         }
 
         feedbackInput.value = "";
