@@ -105,6 +105,19 @@
     .feedback-status { margin: 10px 0 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
     .feedback-status.success { color: var(--accent); font-weight: 800; }
     .feedback-status.error { color: var(--danger); font-weight: 800; }
+    .report-box { margin-top: 12px; padding: 14px; border-radius: 16px; background: #fff7ed; border: 1px solid #fed7aa; }
+    .report-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #9a3412; }
+    .report-desc { margin: 0 0 12px; color: #7c2d12; font-size: 13px; line-height: 1.5; }
+    .report-panel { margin-top: 12px; }
+    .report-field { margin-top: 10px; }
+    .report-label { display: block; margin-bottom: 6px; font-size: 13px; line-height: 1.35; font-weight: 800; color: #7c2d12; }
+    .report-file { width: 100%; border: 1px solid #fed7aa; border-radius: 14px; padding: 11px; background: #ffffff; color: #374151; font-size: 13px; }
+    .report-note { width: 100%; min-height: 82px; resize: vertical; border: 1px solid #fed7aa; border-radius: 14px; padding: 12px; font-family: inherit; font-size: 14px; line-height: 1.5; outline: none; }
+    .report-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .report-actions button { flex: 1; min-height: 46px; border: none; border-radius: 14px; padding: 12px; font-size: 14px; font-weight: 800; cursor: pointer; }
+    .report-status { margin: 10px 0 0; color: #7c2d12; font-size: 13px; line-height: 1.5; }
+    .report-status.success { color: var(--accent); font-weight: 800; }
+    .report-status.error { color: var(--danger); font-weight: 800; }
 
     .inapp-box { border: 1px solid var(--line); border-radius: 18px; background: #fafbfc; padding: 18px; margin-bottom: 14px; text-align: center; }
     .inapp-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
@@ -196,6 +209,30 @@
         <div class="field"><input type="text" id="barcode-input" placeholder="Enter barcode manually" /></div>
         <button class="secondary-btn" id="search-btn">Search product</button>
         <p id="status-message" class="status-message hidden"></p>
+        <div class="report-box hidden" id="missing-report-box" aria-label="Report missing product">
+          <p class="report-title" id="report-title">Product not found yet</p>
+          <p class="report-desc" id="report-desc">Help us add this product by sending two photos.</p>
+          <button class="secondary-btn" id="report-open-btn" type="button">Report this product</button>
+          <div class="report-panel hidden" id="report-panel">
+            <div class="report-field">
+              <label class="report-label" for="report-product-photo" id="report-product-photo-label">Product front photo</label>
+              <input class="report-file" id="report-product-photo" type="file" accept="image/*" capture="environment">
+            </div>
+            <div class="report-field">
+              <label class="report-label" for="report-barcode-photo" id="report-barcode-photo-label">Barcode photo</label>
+              <input class="report-file" id="report-barcode-photo" type="file" accept="image/*" capture="environment">
+            </div>
+            <div class="report-field">
+              <label class="report-label" for="report-note" id="report-note-label">Additional note (optional)</label>
+              <textarea class="report-note" id="report-note" maxlength="1000" placeholder="Brand, product name, or anything helpful."></textarea>
+            </div>
+            <div class="report-actions">
+              <button class="secondary-btn" id="report-cancel-btn" type="button">Cancel</button>
+              <button class="primary-btn" id="report-send-btn" type="button">Send report</button>
+            </div>
+            <p class="report-status hidden" id="report-status"></p>
+          </div>
+        </div>
         <div class="scan-tips" id="scan-tips" aria-label="Scanning tips">
           <button class="scan-tips-summary" id="scan-tips-toggle" type="button" aria-expanded="false">
             <span class="scan-tips-title" id="scan-tips-title">Scanning tips</span>
@@ -327,6 +364,7 @@
     let isProcessingScan = false;
     let pendingQrTimer = null;
     let pendingQrValue = "";
+    let lastMissingBarcode = "";
 
     const translations = {
       "ko": {
@@ -362,6 +400,22 @@
             success: "귀하의 의견에 감사드립니다. 좋은 서비스 제공을 위해 더 노력하겠습니다.",
             empty: "내용을 입력해 주세요.",
             error: "전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
+          },
+          report: {
+            title: "해당 바코드로 등록된 상품이 없습니다.",
+            desc: "상품 전면 사진과 바코드 사진을 보내주시면 더 빠르게 추가할 수 있어요.",
+            openBtn: "상품 제보하기",
+            productPhotoLabel: "상품 전면 사진",
+            barcodePhotoLabel: "바코드 사진",
+            noteLabel: "추가 설명 (선택)",
+            notePlaceholder: "브랜드명, 상품명, 눈에 띄는 특징이 있다면 적어주세요.",
+            cancelBtn: "취소",
+            sendBtn: "제보하기",
+            sending: "제보 전송 중...",
+            success: "상품 제보 감사합니다. 확인 후 상품 정보를 추가해나가겠습니다.",
+            missingPhotos: "상품 전면 사진과 바코드 사진을 모두 추가해 주세요.",
+            fileTooLarge: "사진 1장당 10MB 이하로 업로드해 주세요.",
+            error: "상품 제보 전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
           },
           about: {
             heading: "이 서비스는 무엇인가요?",
@@ -441,6 +495,22 @@
             empty: "Please enter your feedback.",
             error: "Failed to send. Please try again later."
           },
+          report: {
+            title: "No product is registered for this barcode yet.",
+            desc: "Send us a product front photo and a barcode photo to help us add it faster.",
+            openBtn: "Report this product",
+            productPhotoLabel: "Product front photo",
+            barcodePhotoLabel: "Barcode photo",
+            noteLabel: "Additional note (optional)",
+            notePlaceholder: "Brand, product name, or anything helpful.",
+            cancelBtn: "Cancel",
+            sendBtn: "Send report",
+            sending: "Sending report...",
+            success: "Thank you for the product report. We’ll review it and keep adding product information.",
+            missingPhotos: "Please add both the product front photo and barcode photo.",
+            fileTooLarge: "Please upload photos under 10MB each.",
+            error: "Failed to send product report. Please try again later."
+          },
           about: {
             heading: "What is this?",
             storyTitle: "Our Story",
@@ -518,6 +588,22 @@
             success: "ご意見ありがとうございます。より良いサービスを提供できるよう改善していきます。",
             empty: "内容を入力してください。",
             error: "送信に失敗しました。しばらくしてからもう一度お試しください。"
+          },
+          report: {
+            title: "このバーコードの商品はまだ登録されていません。",
+            desc: "商品の正面写真とバーコード写真を送ると、より早く追加できます。",
+            openBtn: "この商品を報告する",
+            productPhotoLabel: "商品の正面写真",
+            barcodePhotoLabel: "バーコード写真",
+            noteLabel: "追加説明（任意）",
+            notePlaceholder: "ブランド名、商品名、特徴などがあれば入力してください。",
+            cancelBtn: "キャンセル",
+            sendBtn: "送信",
+            sending: "送信中...",
+            success: "商品の報告ありがとうございます。確認後、商品情報を追加していきます。",
+            missingPhotos: "商品の正面写真とバーコード写真の両方を追加してください。",
+            fileTooLarge: "写真は1枚につき10MB以下でアップロードしてください。",
+            error: "商品の報告に失敗しました。しばらくしてからもう一度お試しください。"
           },
           about: {
             heading: "これは何ですか？",
@@ -597,6 +683,22 @@
             empty: "请输入内容。",
             error: "发送失败。请稍后再试。"
           },
+          report: {
+            title: "该条形码尚未注册商品。",
+            desc: "请发送商品正面照片和条形码照片，帮助我们更快添加。",
+            openBtn: "报告此商品",
+            productPhotoLabel: "商品正面照片",
+            barcodePhotoLabel: "条形码照片",
+            noteLabel: "补充说明（可选）",
+            notePlaceholder: "如有品牌名、商品名或特征，请填写。",
+            cancelBtn: "取消",
+            sendBtn: "发送报告",
+            sending: "正在发送...",
+            success: "感谢您的商品报告。我们会确认后继续添加商品信息。",
+            missingPhotos: "请同时添加商品正面照片和条形码照片。",
+            fileTooLarge: "请上传每张10MB以下的照片。",
+            error: "商品报告发送失败。请稍后再试。"
+          },
           about: {
             heading: "这是什么服务？",
             storyTitle: "Our Story",
@@ -674,6 +776,22 @@
             success: "感謝您的回饋。我們會持續努力，提供更好的服務。",
             empty: "請輸入內容。",
             error: "傳送失敗。請稍後再試。"
+          },
+          report: {
+            title: "此條碼尚未註冊商品。",
+            desc: "請傳送商品正面照片和條碼照片，幫助我們更快新增。",
+            openBtn: "回報此商品",
+            productPhotoLabel: "商品正面照片",
+            barcodePhotoLabel: "條碼照片",
+            noteLabel: "補充說明（選填）",
+            notePlaceholder: "如有品牌名、商品名或特徵，請填寫。",
+            cancelBtn: "取消",
+            sendBtn: "傳送回報",
+            sending: "正在傳送...",
+            success: "感謝您的商品回報。我們會確認後持續新增商品資訊。",
+            missingPhotos: "請同時加入商品正面照片和條碼照片。",
+            fileTooLarge: "請上傳每張10MB以下的照片。",
+            error: "商品回報傳送失敗。請稍後再試。"
           },
           about: {
             heading: "這是什麼服務？",
@@ -816,6 +934,84 @@
 
     function getFeedbackText() {
       return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).feedback || translations.en.home.feedback;
+    }
+
+    function getReportText() {
+      return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).report || translations.en.home.report;
+    }
+
+    function updateReportText(home) {
+      const report = home.report || translations.en.home.report;
+
+      document.getElementById("report-title").textContent = report.title;
+      document.getElementById("report-desc").textContent = report.desc;
+      document.getElementById("report-open-btn").textContent = report.openBtn;
+      document.getElementById("report-product-photo-label").textContent = report.productPhotoLabel;
+      document.getElementById("report-barcode-photo-label").textContent = report.barcodePhotoLabel;
+      document.getElementById("report-note-label").textContent = report.noteLabel;
+      document.getElementById("report-note").placeholder = report.notePlaceholder;
+      document.getElementById("report-cancel-btn").textContent = report.cancelBtn;
+      document.getElementById("report-send-btn").textContent = report.sendBtn;
+    }
+
+    function setReportStatus(message, type = "") {
+      const reportStatus = document.getElementById("report-status");
+
+      reportStatus.textContent = message;
+      reportStatus.className = "report-status";
+      if (type) reportStatus.classList.add(type);
+      reportStatus.classList.remove("hidden");
+    }
+
+    function hideMissingReport() {
+      lastMissingBarcode = "";
+      document.getElementById("missing-report-box").classList.add("hidden");
+      document.getElementById("report-panel").classList.add("hidden");
+      document.getElementById("report-status").classList.add("hidden");
+      document.getElementById("report-product-photo").value = "";
+      document.getElementById("report-barcode-photo").value = "";
+      document.getElementById("report-note").value = "";
+    }
+
+    function showMissingReport(barcode) {
+      lastMissingBarcode = String(barcode || "").trim();
+      document.getElementById("missing-report-box").classList.remove("hidden");
+      document.getElementById("report-panel").classList.add("hidden");
+      document.getElementById("report-status").classList.add("hidden");
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("image load failed"));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    async function compressImageFile(file, options = {}) {
+      const maxSize = options.maxSize || 1200;
+      const quality = options.quality || 0.8;
+      const image = await loadImageFromFile(file);
+      const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      canvas.width = width;
+      canvas.height = height;
+      context.drawImage(image, 0, 0, width, height);
+
+      return canvas.toDataURL("image/jpeg", quality);
     }
 
     function trackEvent(eventName, properties = {}) {
@@ -973,6 +1169,7 @@
       barcodeInput.value = "";
       statusMessage.textContent = "";
       statusMessage.classList.add("hidden");
+      hideMissingReport();
       clearPendingQr();
       isProcessingScan = false;
     }
@@ -1032,6 +1229,7 @@
 
       statusMessage.textContent = text.loading;
       statusMessage.classList.remove("hidden", "error");
+      hideMissingReport();
       searchBtn.disabled = true;
 
       try {
@@ -1087,6 +1285,7 @@
 
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
+        showMissingReport(rawBarcode);
 
       } catch (err) {
         console.error("Search Error:", err);
@@ -1297,6 +1496,7 @@
         document.getElementById("scan-home-point-3").textContent = home.point3;
         updateScanTips(home);
         updateFeedbackText(home);
+        updateReportText(home);
         updateAboutText(home);
         document.getElementById("scan-guide-text").textContent = text.scanGuide;
         document.getElementById("change-language-from-scan").textContent = text.changeLanguage;
@@ -1455,6 +1655,99 @@
       } finally {
         sendButton.disabled = false;
         sendButton.textContent = feedbackText.sendBtn;
+      }
+    });
+
+    document.getElementById("report-open-btn").addEventListener("click", () => {
+      document.getElementById("report-panel").classList.remove("hidden");
+      document.getElementById("report-status").classList.add("hidden");
+      trackEvent("missing_product_report_opened", {
+        barcode: lastMissingBarcode || barcodeInput.value.trim()
+      });
+    });
+
+    document.getElementById("report-cancel-btn").addEventListener("click", () => {
+      document.getElementById("report-panel").classList.add("hidden");
+      document.getElementById("report-status").classList.add("hidden");
+    });
+
+    document.getElementById("report-send-btn").addEventListener("click", async () => {
+      const reportText = getReportText();
+      const productFile = document.getElementById("report-product-photo").files[0];
+      const barcodeFile = document.getElementById("report-barcode-photo").files[0];
+      const reportButton = document.getElementById("report-send-btn");
+      const barcode = lastMissingBarcode || barcodeInput.value.trim();
+      const maxSize = 10 * 1024 * 1024;
+
+      if (!productFile || !barcodeFile) {
+        setReportStatus(reportText.missingPhotos, "error");
+        return;
+      }
+
+      if (productFile.size > maxSize || barcodeFile.size > maxSize) {
+        setReportStatus(reportText.fileTooLarge, "error");
+        return;
+      }
+
+      reportButton.disabled = true;
+      reportButton.textContent = reportText.sending;
+      setReportStatus(reportText.sending);
+
+      try {
+        const note = document.getElementById("report-note").value.trim();
+        const [productDataUrl, barcodeDataUrl] = await Promise.all([
+          compressImageFile(productFile, { maxSize: 1200, quality: 0.8 }),
+          compressImageFile(barcodeFile, { maxSize: 1200, quality: 0.8 })
+        ]);
+        const response = await fetch("/api/reportProduct", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            barcode,
+            message: note,
+            lang: getCurrentLang(),
+            url: window.location.href,
+            userAgent: navigator.userAgent || "",
+            productPhoto: {
+              name: productFile.name,
+              type: productFile.type,
+              dataUrl: productDataUrl
+            },
+            barcodePhoto: {
+              name: barcodeFile.name,
+              type: barcodeFile.type,
+              dataUrl: barcodeDataUrl
+            }
+          })
+        });
+
+        if (!response.ok) {
+          let errorCode = `http_${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorCode = errorData.code || errorCode;
+          } catch (e) {}
+          throw new Error(errorCode);
+        }
+
+        document.getElementById("report-product-photo").value = "";
+        document.getElementById("report-barcode-photo").value = "";
+        document.getElementById("report-note").value = "";
+        setReportStatus(reportText.success, "success");
+        trackEvent("missing_product_reported", {
+          barcode,
+          has_note: Boolean(note)
+        });
+      } catch (error) {
+        const detail = error.message ? ` (${error.message})` : "";
+        setReportStatus(reportText.error + detail, "error");
+        trackEvent("missing_product_report_failed", {
+          barcode,
+          error_message: error.message || ""
+        });
+      } finally {
+        reportButton.disabled = false;
+        reportButton.textContent = reportText.sendBtn;
       }
     });
     
