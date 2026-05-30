@@ -1,10 +1,50 @@
 import crypto from "crypto";
+import admin from "firebase-admin";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
-const SCOPES = [
-  "https://www.googleapis.com/auth/drive.file",
-  "https://www.googleapis.com/auth/spreadsheets"
-].join(" ");
+const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+
+function getFirebasePrivateKey() {
+  const key = process.env.FIREBASE_PRIVATE_KEY || process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY || "";
+  return key.replace(/\\n/g, "\n");
+}
+
+function getGooglePrivateKey() {
+  const key = process.env.REPORT_GOOGLE_PRIVATE_KEY || process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY || "";
+  return key.replace(/\\n/g, "\n");
+}
+
+function getFirebaseClientEmail() {
+  return process.env.FIREBASE_CLIENT_EMAIL || process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+}
+
+function getGoogleClientEmail() {
+  return process.env.REPORT_GOOGLE_CLIENT_EMAIL || process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+}
+
+function initFirebase() {
+  if (admin.apps.length) return;
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = getFirebaseClientEmail();
+  const privateKey = getFirebasePrivateKey();
+  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET;
+
+  if (!projectId || !clientEmail || !privateKey || !storageBucket) {
+    const error = new Error("Firebase credentials or storage bucket are missing");
+    error.code = "missing_firebase_config";
+    throw error;
+  }
+
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId,
+      clientEmail,
+      privateKey
+    }),
+    storageBucket
+  });
+}
 
 function base64Url(input) {
   return Buffer.from(input)
@@ -14,17 +54,9 @@ function base64Url(input) {
     .replace(/\//g, "_");
 }
 
-function getPrivateKey() {
-  const key = process.env.REPORT_GOOGLE_PRIVATE_KEY || process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY || "";
-  return key.replace(/\\n/g, "\n");
-}
-
 function createJwt() {
-  const clientEmail =
-    process.env.REPORT_GOOGLE_CLIENT_EMAIL ||
-    process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL ||
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = getPrivateKey();
+  const clientEmail = getGoogleClientEmail();
+  const privateKey = getGooglePrivateKey();
 
   if (!clientEmail || !privateKey) {
     const error = new Error("Google service account credentials are missing");
@@ -36,7 +68,7 @@ function createJwt() {
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: clientEmail,
-    scope: SCOPES,
+    scope: SHEETS_SCOPE,
     aud: TOKEN_URL,
     exp: now + 3600,
     iat: now
@@ -92,43 +124,29 @@ function parseDataUrl(dataUrl) {
   };
 }
 
-async function uploadImage({ accessToken, folderId, dataUrl, filename }) {
-  const { mimeType, buffer } = parseDataUrl(dataUrl);
-  const boundary = `scankorea_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  const metadata = {
-    name: filename,
-    mimeType,
-    parents: [folderId]
-  };
-  const delimiter = `--${boundary}\r\n`;
-  const closeDelimiter = `\r\n--${boundary}--`;
-  const body = Buffer.concat([
-    Buffer.from(`${delimiter}Content-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`),
-    Buffer.from(`${delimiter}Content-Type: ${mimeType}\r\n\r\n`),
-    buffer,
-    Buffer.from(closeDelimiter)
-  ]);
+function makeDownloadUrl(bucketName, filePath, token) {
+  return `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(bucketName)}/o/${encodeURIComponent(filePath)}?alt=media&token=${encodeURIComponent(token)}`;
+}
 
-  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": `multipart/related; boundary=${boundary}`
-    },
-    body
+async function uploadImage({ dataUrl, filePath }) {
+  initFirebase();
+
+  const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+  const { mimeType, buffer } = parseDataUrl(dataUrl);
+  const token = crypto.randomUUID();
+  const file = admin.storage().bucket().file(filePath);
+
+  await file.save(buffer, {
+    contentType: mimeType,
+    resumable: false,
+    metadata: {
+      metadata: {
+        firebaseStorageDownloadTokens: token
+      }
+    }
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Drive upload failed", response.status, errorText);
-    const error = new Error("Failed to upload image to Google Drive");
-    error.code = "drive_upload_failed";
-    error.status = response.status;
-    throw error;
-  }
-
-  const file = await response.json();
-  return file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`;
+  return makeDownloadUrl(bucketName, filePath, token);
 }
 
 async function appendReport({ accessToken, sheetId, sheetRange, row }) {
@@ -158,11 +176,12 @@ export default async function handler(req, res) {
       ok: true,
       route: "reportProduct",
       env: {
-        clientEmail: Boolean(process.env.REPORT_GOOGLE_CLIENT_EMAIL || process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL),
-        privateKey: Boolean(process.env.REPORT_GOOGLE_PRIVATE_KEY || process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY),
+        firebaseProjectId: Boolean(process.env.FIREBASE_PROJECT_ID),
+        firebaseClientEmail: Boolean(getFirebaseClientEmail()),
+        firebasePrivateKey: Boolean(getFirebasePrivateKey()),
+        storageBucket: Boolean(process.env.FIREBASE_STORAGE_BUCKET),
         sheetId: Boolean(process.env.REPORT_SHEET_ID || process.env.FEEDBACK_SHEET_ID),
-        driveFolderId: Boolean(process.env.REPORT_DRIVE_FOLDER_ID),
-        sheetRange: process.env.REPORT_SHEET_RANGE || "ProductReports!A:I"
+        sheetRange: process.env.REPORT_SHEET_RANGE || "ProductReports!A:K"
       }
     });
   }
@@ -172,13 +191,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "method not allowed" });
   }
 
+  if (process.env.REPORT_UPLOAD_ENABLED === "false") {
+    return res.status(503).json({ error: "product report upload is disabled", code: "upload_disabled" });
+  }
+
   try {
     const sheetId = process.env.REPORT_SHEET_ID || process.env.FEEDBACK_SHEET_ID;
-    const sheetRange = process.env.REPORT_SHEET_RANGE || "ProductReports!A:I";
-    const folderId = process.env.REPORT_DRIVE_FOLDER_ID;
+    const sheetRange = process.env.REPORT_SHEET_RANGE || "ProductReports!A:K";
 
     if (!sheetId) return res.status(500).json({ error: "report sheet is not configured", code: "missing_sheet_id" });
-    if (!folderId) return res.status(500).json({ error: "drive folder is not configured", code: "missing_drive_folder_id" });
+    if (!process.env.FIREBASE_STORAGE_BUCKET) return res.status(500).json({ error: "storage bucket is not configured", code: "missing_storage_bucket" });
 
     const body = req.body || {};
     const barcode = cleanText(body.barcode, 40);
@@ -190,21 +212,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "two photos are required", code: "missing_photos" });
     }
 
-    const accessToken = await getAccessToken();
-    const safeBarcode = barcode.replace(/[^0-9a-zA-Z_-]/g, "");
+    const safeBarcode = barcode.replace(/[^0-9a-zA-Z_-]/g, "") || "unknown";
     const timestamp = new Date().toISOString();
+    const reportId = `${Date.now()}_${crypto.randomUUID()}`;
     const productPhotoUrl = await uploadImage({
-      accessToken,
-      folderId,
       dataUrl: productPhoto.dataUrl,
-      filename: `${safeBarcode || "unknown"}_product_${Date.now()}_${cleanText(productPhoto.name, 80) || "photo"}`
+      filePath: `product-reports/${safeBarcode}/${reportId}_product.jpg`
     });
     const barcodePhotoUrl = await uploadImage({
-      accessToken,
-      folderId,
       dataUrl: barcodePhoto.dataUrl,
-      filename: `${safeBarcode || "unknown"}_barcode_${Date.now()}_${cleanText(barcodePhoto.name, 80) || "photo"}`
+      filePath: `product-reports/${safeBarcode}/${reportId}_barcode.jpg`
     });
+    const accessToken = await getAccessToken();
 
     await appendReport({
       accessToken,
@@ -219,7 +238,9 @@ export default async function handler(req, res) {
         cleanText(body.message),
         cleanText(body.lang, 20),
         cleanText(body.url, 500),
-        cleanText(body.userAgent, 500)
+        cleanText(body.userAgent, 500),
+        "new",
+        ""
       ]
     });
 
