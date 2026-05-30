@@ -73,6 +73,19 @@ function cleanText(value, maxLength = 2000) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      route: "feedback",
+      env: {
+        clientEmail: Boolean(process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL),
+        privateKey: Boolean(process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY),
+        sheetId: Boolean(process.env.FEEDBACK_SHEET_ID),
+        sheetRange: process.env.FEEDBACK_SHEET_RANGE || "Feedback!A:H"
+      }
+    });
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "method not allowed" });
