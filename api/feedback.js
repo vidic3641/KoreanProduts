@@ -21,7 +21,9 @@ function createJwt() {
   const privateKey = getPrivateKey();
 
   if (!clientEmail || !privateKey) {
-    throw new Error("Google service account credentials are missing");
+    const error = new Error("Google service account credentials are missing");
+    error.code = "missing_credentials";
+    throw error;
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -56,7 +58,10 @@ async function getAccessToken() {
   if (!response.ok) {
     const errorText = await response.text();
     console.error("Google token failed", response.status, errorText);
-    throw new Error("Failed to get Google access token");
+    const error = new Error("Failed to get Google access token");
+    error.code = "token_failed";
+    error.status = response.status;
+    throw error;
   }
 
   const data = await response.json();
@@ -68,6 +73,19 @@ function cleanText(value, maxLength = 2000) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      route: "feedback",
+      env: {
+        clientEmail: Boolean(process.env.FEEDBACK_GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL),
+        privateKey: Boolean(process.env.FEEDBACK_GOOGLE_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY),
+        sheetId: Boolean(process.env.FEEDBACK_SHEET_ID),
+        sheetRange: process.env.FEEDBACK_SHEET_RANGE || "Feedback!A:H"
+      }
+    });
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "method not allowed" });
@@ -78,7 +96,7 @@ export default async function handler(req, res) {
     const sheetRange = process.env.FEEDBACK_SHEET_RANGE || "Feedback!A:H";
 
     if (!sheetId) {
-      return res.status(500).json({ error: "feedback sheet is not configured" });
+      return res.status(500).json({ error: "feedback sheet is not configured", code: "missing_sheet_id" });
     }
 
     const body = req.body || {};
@@ -114,12 +132,19 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Google Sheets append failed", response.status, errorText);
-      throw new Error("Failed to append feedback to Google Sheets");
+      const error = new Error("Failed to append feedback to Google Sheets");
+      error.code = "sheet_append_failed";
+      error.status = response.status;
+      throw error;
     }
 
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("feedback error", error);
-    return res.status(500).json({ error: "server error" });
+    return res.status(500).json({
+      error: "server error",
+      code: error.code || "unknown_error",
+      status: error.status || null
+    });
   }
 }
