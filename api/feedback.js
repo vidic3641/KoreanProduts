@@ -54,6 +54,8 @@ async function getAccessToken() {
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Google token failed", response.status, errorText);
     throw new Error("Failed to get Google access token");
   }
 
@@ -110,11 +112,14 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Google Sheets append failed", response.status, errorText);
       throw new Error("Failed to append feedback to Google Sheets");
     }
 
     return res.status(200).json({ ok: true });
   } catch (error) {
+    console.error("feedback error", error);
     return res.status(500).json({ error: "server error" });
   }
 }
