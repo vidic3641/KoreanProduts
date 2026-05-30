@@ -1430,7 +1430,14 @@
           })
         });
 
-        if (!response.ok) throw new Error("feedback failed");
+        if (!response.ok) {
+          let errorCode = "";
+          try {
+            const errorData = await response.json();
+            errorCode = errorData.code || "";
+          } catch (e) {}
+          throw new Error(errorCode || "feedback failed");
+        }
 
         feedbackInput.value = "";
         setFeedbackStatus(feedbackText.success, "success");
@@ -1439,9 +1446,11 @@
           barcode: barcodeInput.value.trim()
         });
       } catch (error) {
-        setFeedbackStatus(feedbackText.error, "error");
+        const detail = error.message && error.message !== "feedback failed" ? ` (${error.message})` : "";
+        setFeedbackStatus(feedbackText.error + detail, "error");
         trackEvent("feedback_submit_failed", {
-          message_length: message.length
+          message_length: message.length,
+          error_message: error.message || ""
         });
       } finally {
         sendButton.disabled = false;
