@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
   <!-- 이름 변경 반영 -->
-  <title>Korean Product Scanner for Travelers | Korean Product Guide</title>
+  <title>Korean Product Shopping Guide for Travelers | Korean Product Guide</title>
 
-  <meta name="description" content="Scan Korean product barcodes and read product information in English, Japanese, Chinese, and Korean. A Korean product guide for travelers.">
+  <meta name="description" content="A Korean product shopping guide for travelers. Scan product barcodes and check key product information in your language before you buy.">
 
-  <meta property="og:title" content="Korean Product Guide">
-  <meta property="og:description" content="Scan Korean products and understand product information in your language.">
+  <meta property="og:title" content="Korean Product Shopping Guide for Travelers">
+  <meta property="og:description" content="Scan a Korean product barcode and understand it in your language before you buy.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://korean-products-guide.vercel.app">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Korean Product Guide">
-  <meta name="twitter:description" content="Scan Korean products and understand product information in your language.">
+  <meta name="twitter:title" content="Korean Product Shopping Guide for Travelers">
+  <meta name="twitter:description" content="Scan a Korean product barcode and understand it in your language before you buy.">
   
   <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
 
@@ -30,7 +30,7 @@
   </script>
 
   <style>
-    :root { --bg: #f4f6f8; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; }
+    :root { --bg: #f4f6f8; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --accent: #0f766e; --accent-soft: #e6f4f1; --warm: #f59e0b; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
     body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
@@ -38,16 +38,27 @@
     .app-screen { min-height: 100vh; min-height: 100dvh; padding: calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 18px; }
     .screen-inner { width: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
     
-    .hero-block { padding-top: 8px; }
-    .hero-title { font-size: 30px; line-height: 1.2; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.02em; }
-    .hero-desc { margin: 0; color: var(--sub); font-size: 15px; line-height: 1.5; }
+    .hero-block { padding-top: 4px; }
+    .hero-kicker { display: inline-flex; align-items: center; min-height: 30px; padding: 6px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 800; margin-bottom: 12px; }
+    .hero-title { font-size: 32px; line-height: 1.08; font-weight: 800; margin: 0 0 14px; letter-spacing: 0; max-width: 440px; }
+    .hero-desc { margin: 0; color: var(--sub); font-size: 15px; line-height: 1.55; max-width: 430px; }
+    .hero-subtitle { margin: 0 0 6px; font-size: 19px; line-height: 1.28; font-weight: 800; letter-spacing: 0; }
+    .hero-points { display: grid; grid-template-columns: 1fr; gap: 7px; margin: 18px 0 0; padding-top: 2px; }
+    .hero-point { display: flex; align-items: flex-start; gap: 9px; min-height: 28px; color: #374151; font-size: 14px; line-height: 1.35; font-weight: 700; }
+    .hero-dot { width: 7px; height: 7px; margin-top: 6px; border-radius: 999px; background: var(--accent); flex: 0 0 auto; }
+    .lang-heading { margin: 10px 0 0; color: var(--sub); font-size: 13px; font-weight: 800; text-transform: uppercase; }
+    .scan-intro { padding: 16px; border-radius: 18px; background: linear-gradient(135deg, #ffffff 0%, #eef7f4 100%); border: 1px solid rgba(15, 118, 110, 0.14); box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); }
+    .scan-intro-kicker { display: inline-flex; align-items: center; min-height: 26px; padding: 5px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 800; margin-bottom: 10px; }
+    .scan-intro-title { margin: 0 0 10px; font-size: 27px; line-height: 1.16; font-weight: 800; letter-spacing: -0.02em; }
+    .scan-intro-subtitle { margin: 0 0 6px; font-size: 19px; line-height: 1.25; font-weight: 800; }
+    .scan-intro-desc { margin: 0; color: #374151; font-size: 14px; line-height: 1.45; }
     
     .lang-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
     .lang-btn, .primary-btn, .secondary-btn { width: 100%; min-height: 60px; border: none; border-radius: 16px; padding: 16px 18px; font-size: 18px; font-weight: 700; cursor: pointer; transition: transform 0.12s ease; }
     .lang-btn, .primary-btn { background: var(--primary); color: var(--primary-text); }
     .secondary-btn { background: var(--soft); color: var(--text); }
     
-    .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .top-bar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 2px; }
     .top-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
     .text-btn { border: none; background: transparent; color: var(--link); font-size: 14px; font-weight: 700; cursor: pointer; padding: 8px 0; }
     
@@ -72,6 +83,28 @@
 
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 18px; background: #fafbfc; min-height: 180px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-bottom: 14px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
+    .scan-tips { margin-top: 14px; border-radius: 16px; background: #f8fafc; border: 1px solid var(--line); overflow: hidden; }
+    .scan-tips-summary { width: 100%; min-height: 46px; border: none; background: transparent; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
+    .scan-tips-title { margin: 0; font-size: 14px; line-height: 1.35; font-weight: 800; color: #374151; text-align: left; }
+    .scan-tips-toggle { color: var(--sub); font-size: 18px; line-height: 1; transition: transform 0.12s ease; }
+    .scan-tips.open .scan-tips-toggle { transform: rotate(45deg); }
+    .scan-tips-list { margin: 0; padding-left: 18px; color: var(--sub); font-size: 13px; line-height: 1.55; }
+    .scan-tips-list li { padding-left: 2px; margin-top: 4px; }
+    .scan-tips-list li:first-child { margin-top: 0; }
+    .scan-tips-body { display: none; padding: 0 14px 14px; }
+    .scan-tips.open .scan-tips-body { display: block; }
+
+    .feedback-block { margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04); }
+    .feedback-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #111827; }
+    .feedback-desc { margin: 0 0 12px; color: var(--sub); font-size: 13px; line-height: 1.5; }
+    .feedback-panel { margin-top: 12px; }
+    .feedback-input { width: 100%; min-height: 104px; resize: vertical; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-family: inherit; font-size: 14px; line-height: 1.5; outline: none; }
+    .feedback-input:focus { border-color: #94a3b8; }
+    .feedback-actions { display: flex; gap: 10px; margin-top: 10px; }
+    .feedback-actions button { flex: 1; min-height: 46px; border: none; border-radius: 14px; padding: 12px; font-size: 14px; font-weight: 800; cursor: pointer; }
+    .feedback-status { margin: 10px 0 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
+    .feedback-status.success { color: var(--accent); font-weight: 800; }
+    .feedback-status.error { color: var(--danger); font-weight: 800; }
 
     .inapp-box { border: 1px solid var(--line); border-radius: 18px; background: #fafbfc; padding: 18px; margin-bottom: 14px; text-align: center; }
     .inapp-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
@@ -89,6 +122,14 @@
     .section { background: var(--surface); border-radius: 18px; padding: 16px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); margin-bottom: 10px; }
     .section-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #4b5563; }
     .section-body { margin: 0; font-size: 15px; line-height: 1.65; white-space: pre-wrap; }
+    .about-block { padding: 4px 0 20px; }
+    .about-heading { margin: 0 0 8px; text-align: center; font-size: 20px; line-height: 1.3; font-weight: 800; letter-spacing: 0; color: #111827; }
+    .about-item { padding: 15px 0; border-top: 1px solid var(--line); }
+    .about-heading + .about-item { border-top: none; }
+    .about-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #111827; }
+    .about-body { margin: 0; color: var(--sub); font-size: 14px; line-height: 1.6; }
+    .about-steps { margin: 0; padding-left: 20px; color: var(--sub); font-size: 14px; line-height: 1.65; }
+    .about-steps li { padding-left: 2px; }
     .bottom-actions { display: flex; gap: 10px; margin-top: 20px; }
     .bottom-actions button { flex: 1; }
   </style>
@@ -98,9 +139,17 @@
   <section id="language-screen" class="app-screen">
     <div class="screen-inner">
       <div class="hero-block">
-        <h1 class="hero-title">Scan Korean Products in Your Language</h1>
-        <p class="hero-desc">Choose your language to read Korean product information instantly.</p>
+        <div class="hero-kicker" id="home-kicker">Korean Product Guide</div>
+        <h1 class="hero-title" id="home-title">Korean Product Shopping Guide for Travelers</h1>
+        <p class="hero-subtitle" id="home-subtitle">Know before you buy.</p>
+        <p class="hero-desc" id="home-desc">Scan the barcode of any product you are curious about.</p>
+        <div class="hero-points" aria-label="Service highlights">
+          <div class="hero-point"><span class="hero-dot"></span><span id="home-point-1">Built for travelers shopping in Korea</span></div>
+          <div class="hero-point"><span class="hero-dot"></span><span id="home-point-2">Beauty notes, cautions, ingredients, and usage</span></div>
+          <div class="hero-point"><span class="hero-dot"></span><span id="home-point-3">No app install needed</span></div>
+        </div>
       </div>
+      <p class="lang-heading" id="home-lang-heading">Choose your language</p>
       <div class="lang-list">
         <button class="lang-btn" data-lang="ko">한국어</button>
         <button class="lang-btn" data-lang="en">English</button>
@@ -114,8 +163,19 @@
   <section id="scan-screen" class="app-screen hidden">
     <div class="screen-inner">
       <div class="top-bar">
-        <div class="top-title" id="scan-title">Scan Product</div>
+        <div class="top-title hidden" id="scan-title">Scan Product</div>
         <button class="text-btn" id="change-language-from-scan">Change language</button>
+      </div>
+      <div class="hero-block">
+        <div class="hero-kicker hidden" id="scan-home-kicker">Korean Product Guide</div>
+        <h1 class="hero-title" id="scan-home-title">Korean Product Shopping Guide for Travelers</h1>
+        <p class="hero-subtitle" id="scan-home-subtitle">Know before you buy.</p>
+        <p class="hero-desc" id="scan-home-desc">Scan the barcode of any product you are curious about.</p>
+        <div class="hero-points" aria-label="Service highlights">
+          <div class="hero-point"><span class="hero-dot"></span><span id="scan-home-point-1">Built for travelers shopping in Korea</span></div>
+          <div class="hero-point"><span class="hero-dot"></span><span id="scan-home-point-2">Beauty notes, cautions, ingredients, and usage</span></div>
+          <div class="hero-point"><span class="hero-dot"></span><span id="scan-home-point-3">No app install needed</span></div>
+        </div>
       </div>
       <div class="panel">
         <div id="inapp-box" class="inapp-box hidden">
@@ -136,6 +196,58 @@
         <div class="field"><input type="text" id="barcode-input" placeholder="Enter barcode manually" /></div>
         <button class="secondary-btn" id="search-btn">Search product</button>
         <p id="status-message" class="status-message hidden"></p>
+        <div class="scan-tips" id="scan-tips" aria-label="Scanning tips">
+          <button class="scan-tips-summary" id="scan-tips-toggle" type="button" aria-expanded="false">
+            <span class="scan-tips-title" id="scan-tips-title">Scanning tips</span>
+            <span class="scan-tips-toggle" aria-hidden="true">+</span>
+          </button>
+          <div class="scan-tips-body">
+            <ul class="scan-tips-list" id="scan-tips-list">
+              <li>If the barcode is not detected, enter the barcode number manually.</li>
+              <li>Glare or strong reflection can make scanning difficult.</li>
+              <li>Damaged or folded barcodes may not scan correctly.</li>
+              <li>Keep the barcode inside the camera guide box.</li>
+              <li>Hold still for a moment until the camera focuses.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="feedback-block" aria-label="Feedback">
+          <p class="feedback-title" id="feedback-title">Have feedback?</p>
+          <p class="feedback-desc" id="feedback-desc">Tell us what was confusing, missing, or wrong.</p>
+          <button class="secondary-btn" id="feedback-open-btn" type="button">Send feedback</button>
+          <div class="feedback-panel hidden" id="feedback-panel">
+            <textarea class="feedback-input" id="feedback-input" maxlength="2000" placeholder="Tell us what was confusing, missing, or wrong."></textarea>
+            <div class="feedback-actions">
+              <button class="secondary-btn" id="feedback-cancel-btn" type="button">Cancel</button>
+              <button class="primary-btn" id="feedback-send-btn" type="button">Send</button>
+            </div>
+            <p class="feedback-status hidden" id="feedback-status"></p>
+          </div>
+        </div>
+      </div>
+      <div class="about-block" aria-label="About this service">
+        <h2 class="about-heading" id="about-heading">What is this?</h2>
+        <div class="about-item">
+          <h2 class="about-title" id="about-story-title">Our Story</h2>
+          <p class="about-body" id="about-story-body">This guide was built for travelers who want to understand Korean products before buying.</p>
+        </div>
+        <div class="about-item">
+          <h2 class="about-title" id="about-do-title">What We Do</h2>
+          <p class="about-body" id="about-do-body">Scan a barcode and check product summary, cautions, ingredients, and usage in your language.</p>
+        </div>
+        <div class="about-item">
+          <h2 class="about-title" id="about-how-title">How It Works</h2>
+          <ol class="about-steps" id="about-how-steps">
+            <li>Scan or enter a barcode</li>
+            <li>Find the matching product</li>
+            <li>Read key product notes</li>
+            <li>Decide with more confidence</li>
+          </ol>
+        </div>
+        <div class="about-item">
+          <h2 class="about-title" id="about-data-title">Data & Accuracy</h2>
+          <p class="about-body" id="about-data-body">Product information is based on collected product data, public sources, and AI-assisted summaries. Please check the actual product label before purchase or use.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -218,6 +330,51 @@
 
     const translations = {
       "ko": {
+        home: {
+          kicker: "Korean Product Guide",
+          title: "한국 상품, 구매 전에 먼저 확인하세요.",
+          subtitle: "바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법을 내 언어로 볼 수 있어요.",
+          desc: "",
+          point1: "무슨 상품인지 빠르게 이해",
+          point2: "주의할 점을 미리 확인",
+          point3: "여행 중 쇼핑 실패 줄이기",
+          langHeading: "언어 선택",
+          scanIntroKicker: "Korean Product Guide",
+          scanIntroTitle: "한국 상품, 구매 전에 먼저 확인하세요.",
+          scanIntroSubtitle: "바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법을 내 언어로 볼 수 있어요.",
+          scanIntroDesc: "",
+          scanTipsTitle: "스캔 안내",
+          scanTips: [
+            "바코드가 인식되지 않으면 바코드 번호를 직접 입력해 주세요.",
+            "빛 번짐이나 강한 반사가 있으면 인식이 어려울 수 있습니다.",
+            "바코드가 손상되었거나 접혀 있으면 제대로 인식되지 않을 수 있습니다.",
+            "바코드가 카메라 안내선 안에 들어오도록 맞춰 주세요.",
+            "카메라 초점이 맞을 때까지 잠시 고정해 주세요."
+          ],
+          feedback: {
+            title: "의견을 보내주세요",
+            desc: "불편했던 점, 개선 의견, 잘못된 정보를 알려주세요.",
+            openBtn: "피드백 보내기",
+            placeholder: "불편했던 점이나 개선 의견을 알려주세요.",
+            cancelBtn: "취소",
+            sendBtn: "보내기",
+            sending: "전송 중...",
+            success: "귀하의 의견에 감사드립니다. 좋은 서비스 제공을 위해 더 노력하겠습니다.",
+            empty: "내용을 입력해 주세요.",
+            error: "전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
+          },
+          about: {
+            heading: "이 서비스는 무엇인가요?",
+            storyTitle: "Our Story",
+            storyBody: "화장품, 스낵 등 한국 상품이 판매되는 실제 현장에서 관광객들이 언어 장벽으로 상품을 제대로 이해하지 못하는 문제를 발견했습니다. 한국 여행 중 쇼핑을 더 편리하고 안전하게 만들기 위해 이 서비스를 개발했습니다.",
+            doTitle: "What We Do",
+            doBody: "궁금한 상품의 바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법 등을 내 언어로 확인할 수 있습니다.",
+            howTitle: "How It Works",
+            howSteps: ["상품 바코드를 스캔하거나 바코드 번호를 입력", "상품 정보 조회", "핵심 정보 확인", "더 자신 있게 구매 결정"],
+            dataTitle: "Data & Accuracy",
+            dataBody: "상품 정보는 수집한 데이터, 공개 자료, AI 요약을 바탕으로 제공됩니다. 구매 또는 사용 전 실제 제품 라벨을 확인해주세요."
+          }
+        },
         scanTitle: "상품 스캔",
         scanGuide: "상품의 바코드를 스캔해 주세요.",
         changeLanguage: "Change language",
@@ -251,6 +408,51 @@
         }
       },
       "en": {
+        home: {
+          kicker: "Korean Product Guide",
+          title: "Check Korean products before you buy.",
+          subtitle: "Scan a barcode to see product summaries, cautions, ingredients, and usage in your language.",
+          desc: "",
+          point1: "Understand what it is",
+          point2: "Check what to watch out for",
+          point3: "Avoid shopping mistakes while traveling",
+          langHeading: "Choose your language",
+          scanIntroKicker: "Korean Product Guide",
+          scanIntroTitle: "Check Korean products before you buy.",
+          scanIntroSubtitle: "Scan a barcode to see product summaries, cautions, ingredients, and usage in your language.",
+          scanIntroDesc: "",
+          scanTipsTitle: "Scanning tips",
+          scanTips: [
+            "If the barcode is not detected, enter the barcode number manually.",
+            "Glare or strong reflection can make scanning difficult.",
+            "Damaged or folded barcodes may not scan correctly.",
+            "Keep the barcode inside the camera guide box.",
+            "Hold still for a moment until the camera focuses."
+          ],
+          feedback: {
+            title: "Have feedback?",
+            desc: "Tell us what was confusing, missing, or wrong.",
+            openBtn: "Send feedback",
+            placeholder: "Tell us what was confusing, missing, or wrong.",
+            cancelBtn: "Cancel",
+            sendBtn: "Send",
+            sending: "Sending...",
+            success: "Thank you for your feedback. We’ll keep improving the service.",
+            empty: "Please enter your feedback.",
+            error: "Failed to send. Please try again later."
+          },
+          about: {
+            heading: "What is this?",
+            storyTitle: "Our Story",
+            storyBody: "We found that many travelers struggle to understand Korean products such as cosmetics and snacks while shopping in real stores. We built this service to make shopping in Korea easier and safer.",
+            doTitle: "What We Do",
+            doBody: "Scan a product barcode to check its summary, cautions, ingredients, usage, and more in your language.",
+            howTitle: "How It Works",
+            howSteps: ["Scan the product barcode or enter the barcode number", "Find the matching product", "Read key product notes", "Decide with more confidence"],
+            dataTitle: "Data & Accuracy",
+            dataBody: "Product information is based on collected product data, public sources, and AI-assisted summaries. Please check the actual product label before purchase or use."
+          }
+        },
         scanTitle: "Scan Product",
         scanGuide: "Scan the barcode on the product.",
         changeLanguage: "Change language",
@@ -284,6 +486,51 @@
         }
       },
       "ja": {
+        home: {
+          kicker: "Korean Product Guide",
+          title: "韓国商品、買う前にチェック。",
+          subtitle: "バーコードをスキャンすると、商品の要約、注意点、成分、使い方をあなたの言語で確認できます。",
+          desc: "",
+          point1: "どんな商品かすばやく理解",
+          point2: "注意点を事前に確認",
+          point3: "旅行中の買い物ミスを減らす",
+          langHeading: "言語を選択",
+          scanIntroKicker: "Korean Product Guide",
+          scanIntroTitle: "韓国商品、買う前にチェック。",
+          scanIntroSubtitle: "バーコードをスキャンすると、商品の要約、注意点、成分、使い方をあなたの言語で確認できます。",
+          scanIntroDesc: "",
+          scanTipsTitle: "スキャンのヒント",
+          scanTips: [
+            "バーコードが認識されない場合は、番号を直接入力してください。",
+            "光の反射や強い映り込みがあると、読み取りにくい場合があります。",
+            "バーコードが破損していたり折れていたりすると、正しく読み取れない場合があります。",
+            "バーコードがカメラのガイド枠内に入るように合わせてください。",
+            "カメラのピントが合うまで少し固定してください。"
+          ],
+          feedback: {
+            title: "ご意見をお聞かせください",
+            desc: "分かりにくかった点、改善点、誤った情報を教えてください。",
+            openBtn: "フィードバックを送る",
+            placeholder: "分かりにくかった点や改善点を教えてください。",
+            cancelBtn: "キャンセル",
+            sendBtn: "送信",
+            sending: "送信中...",
+            success: "ご意見ありがとうございます。より良いサービスを提供できるよう改善していきます。",
+            empty: "内容を入力してください。",
+            error: "送信に失敗しました。しばらくしてからもう一度お試しください。"
+          },
+          about: {
+            heading: "これは何ですか？",
+            storyTitle: "Our Story",
+            storyBody: "化粧品やスナックなどの韓国商品が販売されている実際の売り場で、多くの旅行者が言語の壁により商品を十分に理解できていないことに気づきました。韓国旅行中の買い物をより便利で安全にするため、このサービスを開発しました。",
+            doTitle: "What We Do",
+            doBody: "気になる商品のバーコードをスキャンすると、商品の要約、注意点、成分、使い方などをあなたの言語で確認できます。",
+            howTitle: "How It Works",
+            howSteps: ["商品のバーコードをスキャン、またはバーコード番号を入力", "該当する商品を検索", "重要な商品情報を確認", "より安心して購入を判断"],
+            dataTitle: "Data & Accuracy",
+            dataBody: "商品情報は収集データ、公開情報、AIによる要約をもとに提供しています。購入または使用前に実際の商品ラベルをご確認ください。"
+          }
+        },
         scanTitle: "スキャン",
         scanGuide: "商品のバーコードをスキャンしてください。",
         changeLanguage: "Change language",
@@ -317,6 +564,51 @@
         }
       },
       "cn": {
+        home: {
+          kicker: "Korean Product Guide",
+          title: "韩国商品，购买前先确认。",
+          subtitle: "扫描条形码，即可用你的语言查看商品摘要、注意事项、成分和用法。",
+          desc: "",
+          point1: "快速了解这是什么商品",
+          point2: "提前查看需要注意的地方",
+          point3: "减少旅行购物时买错的风险",
+          langHeading: "选择语言",
+          scanIntroKicker: "Korean Product Guide",
+          scanIntroTitle: "韩国商品，购买前先确认。",
+          scanIntroSubtitle: "扫描条形码，即可用你的语言查看商品摘要、注意事项、成分和用法。",
+          scanIntroDesc: "",
+          scanTipsTitle: "扫描提示",
+          scanTips: [
+            "如果无法识别条形码，请手动输入条形码号码。",
+            "强光反射或眩光可能会影响识别。",
+            "条形码破损或折叠时，可能无法正确识别。",
+            "请将条形码放在摄像头引导框内。",
+            "请保持稳定片刻，等待摄像头对焦。"
+          ],
+          feedback: {
+            title: "请发送反馈",
+            desc: "请告诉我们不方便、缺失或错误的地方。",
+            openBtn: "发送反馈",
+            placeholder: "请告诉我们不方便、缺失或错误的地方。",
+            cancelBtn: "取消",
+            sendBtn: "发送",
+            sending: "发送中...",
+            success: "感谢您的反馈。我们会继续努力，提供更好的服务。",
+            empty: "请输入内容。",
+            error: "发送失败。请稍后再试。"
+          },
+          about: {
+            heading: "这是什么服务？",
+            storyTitle: "Our Story",
+            storyBody: "我们在化妆品、零食等韩国商品销售现场发现，许多旅行者因为语言障碍，难以充分理解商品信息。我们开发这项服务，是为了让韩国旅行中的购物更方便、更安心。",
+            doTitle: "What We Do",
+            doBody: "扫描你感兴趣商品的条形码后，可以用你的语言查看商品摘要、注意事项、成分、用法等信息。",
+            howTitle: "How It Works",
+            howSteps: ["扫描商品条形码或输入条形码号码", "查找对应商品", "查看关键商品信息", "更有信心地做出购买决定"],
+            dataTitle: "Data & Accuracy",
+            dataBody: "商品信息基于已收集的数据、公开资料和AI辅助摘要提供。购买或使用前，请以实际商品标签为准。"
+          }
+        },
         scanTitle: "扫描",
         scanGuide: "请扫描商品上的条形码。",
         changeLanguage: "Change language",
@@ -350,6 +642,51 @@
         }
       },
       "tw": {
+        home: {
+          kicker: "Korean Product Guide",
+          title: "韓國商品，購買前先確認。",
+          subtitle: "掃描條碼，即可用你的語言查看商品摘要、注意事項、成分與用法。",
+          desc: "",
+          point1: "快速了解這是什麼商品",
+          point2: "提前查看需要注意的地方",
+          point3: "降低旅行購物時買錯的風險",
+          langHeading: "選擇語言",
+          scanIntroKicker: "Korean Product Guide",
+          scanIntroTitle: "韓國商品，購買前先確認。",
+          scanIntroSubtitle: "掃描條碼，即可用你的語言查看商品摘要、注意事項、成分與用法。",
+          scanIntroDesc: "",
+          scanTipsTitle: "掃描提示",
+          scanTips: [
+            "如果無法辨識條碼，請手動輸入條碼號碼。",
+            "強光反射或眩光可能會影響辨識。",
+            "條碼破損或折疊時，可能無法正確辨識。",
+            "請將條碼放在攝像頭引導框內。",
+            "請保持穩定片刻，等待攝像頭對焦。"
+          ],
+          feedback: {
+            title: "請傳送回饋",
+            desc: "請告訴我們不方便、缺少或錯誤的地方。",
+            openBtn: "傳送回饋",
+            placeholder: "請告訴我們不方便、缺少或錯誤的地方。",
+            cancelBtn: "取消",
+            sendBtn: "傳送",
+            sending: "傳送中...",
+            success: "感謝您的回饋。我們會持續努力，提供更好的服務。",
+            empty: "請輸入內容。",
+            error: "傳送失敗。請稍後再試。"
+          },
+          about: {
+            heading: "這是什麼服務？",
+            storyTitle: "Our Story",
+            storyBody: "我們在化妝品、零食等韓國商品銷售現場發現，許多旅客因語言障礙，難以充分理解商品資訊。我們開發這項服務，是為了讓韓國旅行中的購物更方便、更安心。",
+            doTitle: "What We Do",
+            doBody: "掃描你感興趣商品的條碼後，可以用你的語言查看商品摘要、注意事項、成分、用法等資訊。",
+            howTitle: "How It Works",
+            howSteps: ["掃描商品條碼或輸入條碼號碼", "查找對應商品", "查看重點商品資訊", "更有信心地做出購買決定"],
+            dataTitle: "Data & Accuracy",
+            dataBody: "商品資訊基於已收集資料、公開資訊與AI輔助摘要提供。購買或使用前，請以實際商品標籤為準。"
+          }
+        },
         scanTitle: "掃描",
         scanGuide: "請掃描商品上的條碼。",
         changeLanguage: "Change language",
@@ -390,6 +727,95 @@
 
     function t() {
       return translations[getCurrentLang()] || translations["en"];
+    }
+
+    function getBrowserLang() {
+      const browserLang = String(navigator.language || navigator.userLanguage || "").toLowerCase();
+
+      if (browserLang.startsWith("ko")) return "ko";
+      if (browserLang.startsWith("ja")) return "ja";
+      if (browserLang === "zh-tw" || browserLang === "zh-hk" || browserLang === "zh-mo") return "tw";
+      if (browserLang.startsWith("zh")) return "cn";
+
+      return "en";
+    }
+
+    function getLanguageScreenLang() {
+      const savedLang = localStorage.getItem("lang");
+      return isSupportedLang(savedLang) ? savedLang : getBrowserLang();
+    }
+
+    function updateLanguageScreenText() {
+      const lang = getLanguageScreenLang();
+      const home = (translations[lang] || translations.en).home || translations.en.home;
+
+      document.getElementById("home-kicker").textContent = home.kicker;
+      document.getElementById("home-title").textContent = home.title;
+      document.getElementById("home-subtitle").textContent = home.subtitle;
+      document.getElementById("home-desc").textContent = home.desc;
+      document.getElementById("home-desc").classList.toggle("hidden", !home.desc);
+      document.getElementById("home-point-1").textContent = home.point1;
+      document.getElementById("home-point-2").textContent = home.point2;
+      document.getElementById("home-point-3").textContent = home.point3;
+      document.getElementById("home-lang-heading").textContent = home.langHeading;
+    }
+
+    function updateAboutText(home) {
+      const about = home.about || translations.en.home.about;
+      const aboutSteps = document.getElementById("about-how-steps");
+
+      document.getElementById("about-heading").textContent = about.heading;
+      document.getElementById("about-story-title").textContent = about.storyTitle;
+      document.getElementById("about-story-body").textContent = about.storyBody;
+      document.getElementById("about-do-title").textContent = about.doTitle;
+      document.getElementById("about-do-body").textContent = about.doBody;
+      document.getElementById("about-how-title").textContent = about.howTitle;
+      document.getElementById("about-data-title").textContent = about.dataTitle;
+      document.getElementById("about-data-body").textContent = about.dataBody;
+
+      aboutSteps.innerHTML = "";
+      about.howSteps.forEach(step => {
+        const li = document.createElement("li");
+        li.textContent = step;
+        aboutSteps.appendChild(li);
+      });
+    }
+
+    function updateScanTips(home) {
+      const tips = home.scanTips || translations.en.home.scanTips;
+      const tipsList = document.getElementById("scan-tips-list");
+
+      document.getElementById("scan-tips-title").textContent = home.scanTipsTitle || translations.en.home.scanTipsTitle;
+      tipsList.innerHTML = "";
+      tips.forEach(tip => {
+        const li = document.createElement("li");
+        li.textContent = tip;
+        tipsList.appendChild(li);
+      });
+    }
+
+    function updateFeedbackText(home) {
+      const feedback = home.feedback || translations.en.home.feedback;
+
+      document.getElementById("feedback-title").textContent = feedback.title;
+      document.getElementById("feedback-desc").textContent = feedback.desc;
+      document.getElementById("feedback-open-btn").textContent = feedback.openBtn;
+      document.getElementById("feedback-input").placeholder = feedback.placeholder;
+      document.getElementById("feedback-cancel-btn").textContent = feedback.cancelBtn;
+      document.getElementById("feedback-send-btn").textContent = feedback.sendBtn;
+    }
+
+    function setFeedbackStatus(message, type = "") {
+      const feedbackStatus = document.getElementById("feedback-status");
+
+      feedbackStatus.textContent = message;
+      feedbackStatus.className = "feedback-status";
+      if (type) feedbackStatus.classList.add(type);
+      feedbackStatus.classList.remove("hidden");
+    }
+
+    function getFeedbackText() {
+      return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).feedback || translations.en.home.feedback;
     }
 
     function trackEvent(eventName, properties = {}) {
@@ -856,8 +1282,22 @@
       
       const text = t();
 
-      if (screen === scanScreen) {
+      if (screen === languageScreen) {
+        updateLanguageScreenText();
+      } else if (screen === scanScreen) {
+        const home = (translations[getCurrentLang()] || translations.en).home || translations.en.home;
         document.getElementById("scan-title").textContent = text.scanTitle;
+        document.getElementById("scan-home-kicker").textContent = home.kicker;
+        document.getElementById("scan-home-title").textContent = home.title;
+        document.getElementById("scan-home-subtitle").textContent = home.subtitle;
+        document.getElementById("scan-home-desc").textContent = home.desc;
+        document.getElementById("scan-home-desc").classList.toggle("hidden", !home.desc);
+        document.getElementById("scan-home-point-1").textContent = home.point1;
+        document.getElementById("scan-home-point-2").textContent = home.point2;
+        document.getElementById("scan-home-point-3").textContent = home.point3;
+        updateScanTips(home);
+        updateFeedbackText(home);
+        updateAboutText(home);
         document.getElementById("scan-guide-text").textContent = text.scanGuide;
         document.getElementById("change-language-from-scan").textContent = text.changeLanguage;
         searchBtn.textContent = text.searchBtn;
@@ -939,6 +1379,73 @@
         barcodeInput.select();
         statusMessage.textContent = text.copied;
         statusMessage.classList.remove("hidden", "error");
+      }
+    });
+
+    document.getElementById("scan-tips-toggle").addEventListener("click", () => {
+      const tipsBox = document.getElementById("scan-tips");
+      const isOpen = tipsBox.classList.toggle("open");
+      document.getElementById("scan-tips-toggle").setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.getElementById("feedback-open-btn").addEventListener("click", () => {
+      document.getElementById("feedback-panel").classList.remove("hidden");
+      document.getElementById("feedback-input").focus();
+      document.getElementById("feedback-status").classList.add("hidden");
+      trackEvent("feedback_opened");
+    });
+
+    document.getElementById("feedback-cancel-btn").addEventListener("click", () => {
+      document.getElementById("feedback-panel").classList.add("hidden");
+      document.getElementById("feedback-status").classList.add("hidden");
+    });
+
+    document.getElementById("feedback-send-btn").addEventListener("click", async () => {
+      const feedbackText = getFeedbackText();
+      const feedbackInput = document.getElementById("feedback-input");
+      const sendButton = document.getElementById("feedback-send-btn");
+      const message = feedbackInput.value.trim();
+
+      if (!message) {
+        setFeedbackStatus(feedbackText.empty, "error");
+        return;
+      }
+
+      sendButton.disabled = true;
+      sendButton.textContent = feedbackText.sending;
+      setFeedbackStatus(feedbackText.sending);
+
+      try {
+        const response = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "feedback",
+            message,
+            lang: getCurrentLang(),
+            barcode: barcodeInput.value.trim(),
+            url: window.location.href,
+            path: window.location.pathname,
+            userAgent: navigator.userAgent || ""
+          })
+        });
+
+        if (!response.ok) throw new Error("feedback failed");
+
+        feedbackInput.value = "";
+        setFeedbackStatus(feedbackText.success, "success");
+        trackEvent("feedback_submitted", {
+          message_length: message.length,
+          barcode: barcodeInput.value.trim()
+        });
+      } catch (error) {
+        setFeedbackStatus(feedbackText.error, "error");
+        trackEvent("feedback_submit_failed", {
+          message_length: message.length
+        });
+      } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = feedbackText.sendBtn;
       }
     });
     
