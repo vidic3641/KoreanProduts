@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <!-- 이름 변경 반영 -->
   <title>Korean Product Shopping Guide for Travelers | Korean Product Guide</title>
@@ -17,8 +17,12 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Korean Product Shopping Guide for Travelers">
   <meta name="twitter:description" content="Scan a Korean product barcode and understand it in your language before you buy.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
-  <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
 
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="Mi Ri init Vi Gi Rr Wi Ji Bi capture calculateEventProperties tn register register_once register_for_session unregister unregister_for_session an getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync un identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException addExceptionStep captureLog startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty nn Xi createPersonProfile setInternalOrTestUser sn Hi cn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing Ki debug Lr rn getPageViewId captureTraceFeedback captureTraceMetric Di".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -30,41 +34,50 @@
   </script>
 
   <style>
-    :root { --bg: #f4f6f8; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --accent: #0f766e; --accent-soft: #e6f4f1; --warm: #f59e0b; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; }
+    :root { --bg: #f6f8fb; --surface: #ffffff; --text: #111111; --sub: #6b7280; --line: #e5e7eb; --primary: #111111; --primary-text: #ffffff; --soft: #eef2f7; --accent: #0f766e; --accent-soft: #e6f4f1; --blue: #2563eb; --blue-soft: #eff6ff; --warm: #f59e0b; --link: #2563eb; --danger: #dc2626; --radius-lg: 20px; --radius-md: 16px; --font-main: "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    html[data-lang="en"] { --font-main: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    html[data-lang="ja"] { --font-main: "Noto Sans JP", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    html[data-lang="cn"] { --font-main: "Noto Sans SC", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    html[data-lang="tw"] { --font-main: "Noto Sans TC", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
-    body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font-main); font-weight: 500; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; overscroll-behavior-y: contain; }
+    button, input, textarea { touch-action: manipulation; }
     .hidden { display: none !important; }
-    .app-screen { min-height: 100vh; min-height: 100dvh; padding: calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 18px; }
-    .screen-inner { width: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+    .app-screen { min-height: 100vh; min-height: 100dvh; padding: calc(16px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+    .screen-inner { width: 100%; max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; flex: 1; }
     
-    .hero-block { padding-top: 4px; }
-    .hero-kicker { display: inline-flex; align-items: center; min-height: 30px; padding: 6px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 800; margin-bottom: 12px; }
-    .hero-title { font-size: 32px; line-height: 1.08; font-weight: 800; margin: 0 0 14px; letter-spacing: 0; max-width: 440px; }
-    .hero-desc { margin: 0; color: var(--sub); font-size: 15px; line-height: 1.55; max-width: 430px; }
-    .hero-subtitle { margin: 0 0 6px; font-size: 19px; line-height: 1.28; font-weight: 800; letter-spacing: 0; }
-    .hero-points { display: grid; grid-template-columns: 1fr; gap: 7px; margin: 18px 0 0; padding-top: 2px; }
-    .hero-point { display: flex; align-items: flex-start; gap: 9px; min-height: 28px; color: #374151; font-size: 14px; line-height: 1.35; font-weight: 700; }
+    .hero-block { padding-top: 2px; }
+    .hero-kicker { display: inline-flex; align-items: center; min-height: 28px; padding: 5px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 900; margin-bottom: 10px; }
+    .hero-title { font-size: 30px; line-height: 1.08; font-weight: 900; margin: 0 0 12px; letter-spacing: 0; max-width: 390px; white-space: pre-line; word-break: keep-all; overflow-wrap: break-word; }
+    .hero-desc { margin: 0; color: var(--sub); font-size: 14px; line-height: 1.5; max-width: 390px; word-break: keep-all; overflow-wrap: break-word; }
+    .hero-subtitle { margin: 0 0 6px; font-size: 18px; line-height: 1.32; font-weight: 800; letter-spacing: 0; white-space: pre-line; word-break: keep-all; overflow-wrap: break-word; }
+    .hero-points { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 14px 0 0; padding-top: 0; }
+    .hero-point { display: flex; align-items: flex-start; gap: 8px; min-height: 24px; color: #374151; font-size: 13px; line-height: 1.35; font-weight: 800; }
+    .hero-point span:last-child { word-break: keep-all; overflow-wrap: break-word; }
     .hero-dot { width: 7px; height: 7px; margin-top: 6px; border-radius: 999px; background: var(--accent); flex: 0 0 auto; }
-    .lang-heading { margin: 10px 0 0; color: var(--sub); font-size: 13px; font-weight: 800; text-transform: uppercase; }
+    .lang-heading { margin: 10px 0 0; color: var(--sub); font-size: 13px; font-weight: 900; text-transform: uppercase; }
     .scan-intro { padding: 16px; border-radius: 18px; background: linear-gradient(135deg, #ffffff 0%, #eef7f4 100%); border: 1px solid rgba(15, 118, 110, 0.14); box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); }
     .scan-intro-kicker { display: inline-flex; align-items: center; min-height: 26px; padding: 5px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 800; margin-bottom: 10px; }
-    .scan-intro-title { margin: 0 0 10px; font-size: 27px; line-height: 1.16; font-weight: 800; letter-spacing: -0.02em; }
+    .scan-intro-title { margin: 0 0 10px; font-size: 27px; line-height: 1.16; font-weight: 900; letter-spacing: 0; }
     .scan-intro-subtitle { margin: 0 0 6px; font-size: 19px; line-height: 1.25; font-weight: 800; }
     .scan-intro-desc { margin: 0; color: #374151; font-size: 14px; line-height: 1.45; }
     
-    .lang-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-    .lang-btn, .primary-btn, .secondary-btn { width: 100%; min-height: 60px; border: none; border-radius: 16px; padding: 16px 18px; font-size: 18px; font-weight: 700; cursor: pointer; transition: transform 0.12s ease; }
+    .lang-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .lang-btn, .primary-btn, .secondary-btn { width: 100%; min-height: 56px; border: none; border-radius: 14px; padding: 14px 16px; font-size: 17px; font-weight: 800; cursor: pointer; transition: transform 0.12s ease; }
     .lang-btn, .primary-btn { background: var(--primary); color: var(--primary-text); }
+    .primary-btn:active, .secondary-btn:active { transform: scale(0.99); }
     .secondary-btn { background: var(--soft); color: var(--text); }
     
-    .top-bar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 2px; }
-    .top-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
-    .text-btn { border: none; background: transparent; color: var(--link); font-size: 14px; font-weight: 700; cursor: pointer; padding: 8px 0; }
+    .top-bar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 0; }
+    .top-title { font-size: 24px; font-weight: 900; letter-spacing: 0; }
+    .text-btn { border: none; background: transparent; color: var(--link); font-size: 14px; font-weight: 800; cursor: pointer; padding: 8px 0; }
+    .language-switch-btn { width: auto; min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.9); color: #1f2937; box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06); }
+    .globe-icon, .action-icon { width: 18px; height: 18px; flex: 0 0 auto; stroke: currentColor; }
     
-    .panel { background: var(--surface); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06); }
+    .panel { background: var(--surface); border-radius: 18px; padding: 16px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06); }
     
-    #reader { width: 100%; border-radius: 18px; overflow: hidden; background: #000; margin-bottom: 14px; display: none; min-height: 250px; position: relative; }
+    #reader { width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 12px; display: none; min-height: 220px; position: relative; }
     #reader::after {
       content: "";
       position: absolute;
@@ -79,13 +92,13 @@
       pointer-events: none;
       z-index: 10;
     }
-    #reader-video { width: 100%; min-height: 250px; object-fit: cover; display: block; background: #000; }
+    #reader-video { width: 100%; min-height: 220px; object-fit: cover; display: block; background: #000; }
 
-    .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 18px; background: #fafbfc; min-height: 180px; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-bottom: 14px; }
+    .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 16px; background: #fafbfc; min-height: 150px; display: flex; align-items: center; justify-content: center; padding: 18px; text-align: center; margin-bottom: 12px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
     .scan-tips { margin-top: 14px; border-radius: 16px; background: #f8fafc; border: 1px solid var(--line); overflow: hidden; }
     .scan-tips-summary { width: 100%; min-height: 46px; border: none; background: transparent; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
-    .scan-tips-title { margin: 0; font-size: 14px; line-height: 1.35; font-weight: 800; color: #374151; text-align: left; }
+    .scan-tips-title { margin: 0; font-size: 14px; line-height: 1.35; font-weight: 900; color: #374151; text-align: left; }
     .scan-tips-toggle { color: var(--sub); font-size: 18px; line-height: 1; transition: transform 0.12s ease; }
     .scan-tips.open .scan-tips-toggle { transform: rotate(45deg); }
     .scan-tips-list { margin: 0; padding-left: 18px; color: var(--sub); font-size: 13px; line-height: 1.55; }
@@ -94,8 +107,8 @@
     .scan-tips-body { display: none; padding: 0 14px 14px; }
     .scan-tips.open .scan-tips-body { display: block; }
 
-    .feedback-block { margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04); }
-    .feedback-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #111827; }
+    .feedback-block { margin-top: 12px; padding: 13px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04); }
+    .feedback-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 900; color: #111827; }
     .feedback-desc { margin: 0 0 12px; color: var(--sub); font-size: 13px; line-height: 1.5; }
     .feedback-panel { margin-top: 12px; }
     .feedback-input { width: 100%; min-height: 104px; resize: vertical; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-family: inherit; font-size: 14px; line-height: 1.5; outline: none; }
@@ -105,8 +118,8 @@
     .feedback-status { margin: 10px 0 0; color: var(--sub); font-size: 13px; line-height: 1.5; }
     .feedback-status.success { color: var(--accent); font-weight: 800; }
     .feedback-status.error { color: var(--danger); font-weight: 800; }
-    .report-box { margin-top: 12px; padding: 14px; border-radius: 16px; background: #fff7ed; border: 1px solid #fed7aa; }
-    .report-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #9a3412; }
+    .report-box { margin-top: 12px; padding: 13px; border-radius: 14px; background: #fff7ed; border: 1px solid #fed7aa; }
+    .report-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 900; color: #9a3412; }
     .report-desc { margin: 0 0 12px; color: #7c2d12; font-size: 13px; line-height: 1.5; }
     .report-panel { margin-top: 12px; }
     .report-field { margin-top: 10px; }
@@ -120,7 +133,7 @@
     .report-status.error { color: var(--danger); font-weight: 800; }
 
     .inapp-box { border: 1px solid var(--line); border-radius: 18px; background: #fafbfc; padding: 18px; margin-bottom: 14px; text-align: center; }
-    .inapp-title { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+    .inapp-title { margin: 0 0 8px; font-size: 18px; font-weight: 900; }
     .inapp-desc { margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: var(--sub); }
     .small-note { margin: 10px 0 0; font-size: 13px; color: var(--sub); line-height: 1.5; }
     
@@ -128,23 +141,50 @@
     .status-message { margin-top: 12px; font-size: 14px; color: var(--sub); }
     .status-message.error { color: var(--danger); font-weight: 700; }
     
-    .product-brand { margin: 0 0 6px; font-size: 14px; font-weight: 800; color: #4b5563; }
-    .product-name { font-size: 28px; font-weight: 800; margin: 0 0 10px; }
-    .meta-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 999px; background: #eef2f7; color: #374151; font-size: 13px; font-weight: 700; margin-right: 4px; }
+    .product-brand { margin: 0 0 6px; font-size: 14px; font-weight: 900; color: #4b5563; }
+    .product-name { font-size: 25px; line-height: 1.15; font-weight: 900; margin: 0 0 10px; word-break: keep-all; overflow-wrap: break-word; }
+    .meta-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 999px; background: #eef2f7; color: #374151; font-size: 13px; font-weight: 800; margin-right: 4px; }
+    .product-summary { margin-top: 10px; font-size: 15px; color: var(--sub); line-height: 1.55; }
+    .share-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; min-height: 50px; font-size: 15px; }
+    .share-status { margin: 10px 0 0; color: var(--accent); font-size: 13px; line-height: 1.5; font-weight: 800; }
+    .share-status.error { color: var(--danger); }
     
-    .section { background: var(--surface); border-radius: 18px; padding: 16px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); margin-bottom: 10px; }
-    .section-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #4b5563; }
+    .section { background: var(--surface); border-radius: 16px; padding: 15px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); margin-bottom: 9px; }
+    .section-title { margin: 0 0 8px; font-size: 14px; font-weight: 900; color: #4b5563; }
     .section-body { margin: 0; font-size: 15px; line-height: 1.65; white-space: pre-wrap; }
-    .about-block { padding: 4px 0 20px; }
-    .about-heading { margin: 0 0 8px; text-align: center; font-size: 20px; line-height: 1.3; font-weight: 800; letter-spacing: 0; color: #111827; }
+    .about-block { padding: 2px 0 16px; }
+    .about-heading { margin: 0 0 8px; text-align: center; font-size: 20px; line-height: 1.3; font-weight: 900; letter-spacing: 0; color: #111827; }
     .about-item { padding: 15px 0; border-top: 1px solid var(--line); }
     .about-heading + .about-item { border-top: none; }
-    .about-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 800; color: #111827; }
+    .about-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 900; color: #111827; }
     .about-body { margin: 0; color: var(--sub); font-size: 14px; line-height: 1.6; }
     .about-steps { margin: 0; padding-left: 20px; color: var(--sub); font-size: 14px; line-height: 1.65; }
     .about-steps li { padding-left: 2px; }
+    .social-footer { padding: 2px 0 10px; text-align: center; }
+    .instagram-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 12px; border-radius: 999px; color: #374151; text-decoration: none; font-size: 14px; line-height: 1.3; font-weight: 900; }
+    .instagram-link:active { transform: scale(0.99); }
+    .instagram-icon { width: 21px; height: 21px; flex: 0 0 auto; stroke: currentColor; }
+    .instagram-handle { overflow-wrap: anywhere; }
     .bottom-actions { display: flex; gap: 10px; margin-top: 20px; }
     .bottom-actions button { flex: 1; }
+    @media (max-width: 360px) {
+      .app-screen { padding-left: 12px; padding-right: 12px; }
+      .screen-inner { gap: 12px; }
+      .hero-title { font-size: 28px; }
+      .hero-subtitle { font-size: 17px; }
+      .hero-point { font-size: 12px; }
+      .lang-btn, .primary-btn, .secondary-btn { min-height: 54px; padding-left: 14px; padding-right: 14px; font-size: 16px; }
+      .panel, .section { padding: 14px; }
+      .bottom-actions { flex-direction: column; }
+    }
+    @media (max-height: 720px) {
+      .app-screen { padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+      .screen-inner { gap: 12px; }
+      .hero-points { margin-top: 12px; }
+      .scan-guide-box { min-height: 132px; }
+      #reader, #reader-video { min-height: 200px; }
+      .about-item { padding-top: 12px; padding-bottom: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -170,6 +210,16 @@
         <button class="lang-btn" data-lang="cn">简体中文</button>
         <button class="lang-btn" data-lang="tw">繁體中文</button>
       </div>
+      <div class="social-footer" aria-label="Instagram(인스타그램) account">
+        <a class="instagram-link" href="https://www.instagram.com/Korean.Product.Guide/" target="_blank" rel="noopener noreferrer" aria-label="Instagram(인스타그램) @Korean.Product.Guide" title="Instagram(인스타그램) @Korean.Product.Guide">
+          <svg class="instagram-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.5" cy="6.5" r="1"></circle>
+          </svg>
+          <span class="instagram-handle">@Korean.Product.Guide</span>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -177,7 +227,15 @@
     <div class="screen-inner">
       <div class="top-bar">
         <div class="top-title hidden" id="scan-title">Scan Product</div>
-        <button class="text-btn" id="change-language-from-scan">Change language</button>
+        <button class="text-btn language-switch-btn" id="change-language-from-scan" type="button" aria-label="Change language">
+          <svg class="globe-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M2 12h20"></path>
+            <path d="M12 2a15.3 15.3 0 0 1 0 20"></path>
+            <path d="M12 2a15.3 15.3 0 0 0 0 20"></path>
+          </svg>
+          <span class="language-switch-label">Change language</span>
+        </button>
       </div>
       <div class="hero-block">
         <div class="hero-kicker hidden" id="scan-home-kicker">Korean Product Guide</div>
@@ -265,15 +323,15 @@
       <div class="about-block" aria-label="About this service">
         <h2 class="about-heading" id="about-heading">What is this?</h2>
         <div class="about-item">
-          <h2 class="about-title" id="about-story-title">Our Story</h2>
+          <h2 class="about-title" id="about-story-title">우리 이야기</h2>
           <p class="about-body" id="about-story-body">This guide was built for travelers who want to understand Korean products before buying.</p>
         </div>
         <div class="about-item">
-          <h2 class="about-title" id="about-do-title">What We Do</h2>
+          <h2 class="about-title" id="about-do-title">제공 기능</h2>
           <p class="about-body" id="about-do-body">Scan a barcode and check product summary, cautions, ingredients, and usage in your language.</p>
         </div>
         <div class="about-item">
-          <h2 class="about-title" id="about-how-title">How It Works</h2>
+          <h2 class="about-title" id="about-how-title">이용 방법</h2>
           <ol class="about-steps" id="about-how-steps">
             <li>Scan or enter a barcode</li>
             <li>Find the matching product</li>
@@ -282,9 +340,19 @@
           </ol>
         </div>
         <div class="about-item">
-          <h2 class="about-title" id="about-data-title">Data & Accuracy</h2>
+          <h2 class="about-title" id="about-data-title">데이터와 정확도</h2>
           <p class="about-body" id="about-data-body">Product information is based on collected product data, public sources, and AI-assisted summaries. Please check the actual product label before purchase or use.</p>
         </div>
+      </div>
+      <div class="social-footer" aria-label="Instagram(인스타그램) account">
+        <a class="instagram-link" href="https://www.instagram.com/Korean.Product.Guide/" target="_blank" rel="noopener noreferrer" aria-label="Instagram(인스타그램) @Korean.Product.Guide" title="Instagram(인스타그램) @Korean.Product.Guide">
+          <svg class="instagram-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.5" cy="6.5" r="1"></circle>
+          </svg>
+          <span class="instagram-handle">@Korean.Product.Guide</span>
+        </a>
       </div>
     </div>
   </section>
@@ -293,7 +361,15 @@
     <div class="screen-inner">
       <div class="top-bar">
         <div class="top-title" id="detail-title">Details</div>
-        <button class="text-btn" id="change-language-from-detail">Change language</button>
+        <button class="text-btn language-switch-btn" id="change-language-from-detail" type="button" aria-label="Change language">
+          <svg class="globe-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M2 12h20"></path>
+            <path d="M12 2a15.3 15.3 0 0 1 0 20"></path>
+            <path d="M12 2a15.3 15.3 0 0 0 0 20"></path>
+          </svg>
+          <span class="language-switch-label">Change language</span>
+        </button>
       </div>
       <div class="panel">
         <p class="product-brand" id="product-brand"></p>
@@ -302,7 +378,15 @@
           <span class="meta-chip" id="product-category-chip"></span>
           <span class="meta-chip hidden" id="product-spf-chip"></span>
         </div>
-        <p class="product-summary" id="product-summary" style="margin-top: 10px; font-size: 15px; color: var(--sub);"></p>
+        <p class="product-summary" id="product-summary"></p>
+        <button class="secondary-btn share-btn" id="copy-product-link-btn" type="button">
+          <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+          <span id="copy-product-link-label">Share this product</span>
+        </button>
+        <p class="share-status hidden" id="share-status"></p>
       </div>
       <!-- 순서 조정: Description -> Volume -> Features -> How to use -> Caution -> Tags 순 -->
       <div class="section"><h3 class="section-title" id="label-description">Description</h3><p class="section-body" id="product-description"></p></div>
@@ -337,6 +421,9 @@
     const readerVideo = document.getElementById("reader-video");
     const inAppBox = document.getElementById("inapp-box");
     const copyUrlBtn = document.getElementById("copy-url-btn");
+    const copyProductLinkBtn = document.getElementById("copy-product-link-btn");
+    const copyProductLinkLabel = document.getElementById("copy-product-link-label");
+    const shareStatus = document.getElementById("share-status");
 
     const productBrand = document.getElementById("product-brand");
     const productName = document.getElementById("product-name");
@@ -370,16 +457,16 @@
       "ko": {
         home: {
           kicker: "Korean Product Guide",
-          title: "한국 상품, 구매 전에 먼저 확인하세요.",
-          subtitle: "바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법을 내 언어로 볼 수 있어요.",
+          title: "한국 상품,\n구매 전에 먼저 확인하세요.",
+          subtitle: "바코드를 스캔하면 상품 요약, 주의사항,\n성분, 사용법을 내 언어로 볼 수 있어요.",
           desc: "",
           point1: "무슨 상품인지 빠르게 이해",
           point2: "주의할 점을 미리 확인",
           point3: "여행 중 쇼핑 실패 줄이기",
           langHeading: "언어 선택",
           scanIntroKicker: "Korean Product Guide",
-          scanIntroTitle: "한국 상품, 구매 전에 먼저 확인하세요.",
-          scanIntroSubtitle: "바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법을 내 언어로 볼 수 있어요.",
+          scanIntroTitle: "한국 상품,\n구매 전에 먼저 확인하세요.",
+          scanIntroSubtitle: "바코드를 스캔하면 상품 요약, 주의사항,\n성분, 사용법을 내 언어로 볼 수 있어요.",
           scanIntroDesc: "",
           scanTipsTitle: "스캔 안내",
           scanTips: [
@@ -419,13 +506,13 @@
           },
           about: {
             heading: "이 서비스는 무엇인가요?",
-            storyTitle: "Our Story",
+            storyTitle: "우리 이야기",
             storyBody: "화장품, 스낵 등 한국 상품이 판매되는 실제 현장에서 관광객들이 언어 장벽으로 상품을 제대로 이해하지 못하는 문제를 발견했습니다. 한국 여행 중 쇼핑을 더 편리하고 안전하게 만들기 위해 이 서비스를 개발했습니다.",
-            doTitle: "What We Do",
+            doTitle: "제공 기능",
             doBody: "궁금한 상품의 바코드를 스캔하면 상품 요약, 주의사항, 성분, 사용법 등을 내 언어로 확인할 수 있습니다.",
-            howTitle: "How It Works",
+            howTitle: "이용 방법",
             howSteps: ["상품 바코드를 스캔하거나 바코드 번호를 입력", "상품 정보 조회", "핵심 정보 확인", "더 자신 있게 구매 결정"],
-            dataTitle: "Data & Accuracy",
+            dataTitle: "데이터와 정확도",
             dataBody: "상품 정보는 수집한 데이터, 공개 자료, AI 요약을 바탕으로 제공됩니다. 구매 또는 사용 전 실제 제품 라벨을 확인해주세요."
           }
         },
@@ -448,6 +535,12 @@
         inAppDesc: "정확한 스캔을 위해 Safari 또는 Chrome에서 열어주세요.",
         copyLink: "주소 복사하기",
         copied: "주소가 복사되었습니다.",
+        shareLink: "이 상품 공유",
+        shareTitle: "Korean Product Guide 상품 정보",
+        shareText: "이 상품 정보를 확인해 보세요.",
+        shareCopied: "상품 링크가 복사되었습니다.",
+        shareShared: "공유창을 열었습니다.",
+        shareCopyFailed: "복사에 실패했습니다. 주소창의 링크를 직접 복사해 주세요.",
         inAppNote: "복사 후 Safari 또는 Chrome 주소창에 붙여넣어주세요.",
         labels: {
           description: "설명",
@@ -464,16 +557,16 @@
       "en": {
         home: {
           kicker: "Korean Product Guide",
-          title: "Check Korean products before you buy.",
-          subtitle: "Scan a barcode to see product summaries, cautions, ingredients, and usage in your language.",
+          title: "Check Korean products\nbefore you buy.",
+          subtitle: "Scan a barcode to see product summaries,\ncautions, ingredients, and usage in your language.",
           desc: "",
           point1: "Understand what it is",
           point2: "Check what to watch out for",
           point3: "Avoid shopping mistakes while traveling",
           langHeading: "Choose your language",
           scanIntroKicker: "Korean Product Guide",
-          scanIntroTitle: "Check Korean products before you buy.",
-          scanIntroSubtitle: "Scan a barcode to see product summaries, cautions, ingredients, and usage in your language.",
+          scanIntroTitle: "Check Korean products\nbefore you buy.",
+          scanIntroSubtitle: "Scan a barcode to see product summaries,\ncautions, ingredients, and usage in your language.",
           scanIntroDesc: "",
           scanTipsTitle: "Scanning tips",
           scanTips: [
@@ -542,6 +635,12 @@
         inAppDesc: "For accurate scanning, please open this page in Safari or Chrome.",
         copyLink: "Copy link",
         copied: "Link copied.",
+        shareLink: "Share this product",
+        shareTitle: "Korean Product Guide product info",
+        shareText: "Check this product information before you buy in Korea.",
+        shareCopied: "Product link copied.",
+        shareShared: "Share sheet opened.",
+        shareCopyFailed: "Failed to copy. Please copy the address from the browser bar.",
         inAppNote: "After copying, open Safari or Chrome and paste the link.",
         labels: {
           description: "Description",
@@ -558,16 +657,16 @@
       "ja": {
         home: {
           kicker: "Korean Product Guide",
-          title: "韓国商品、買う前にチェック。",
-          subtitle: "バーコードをスキャンすると、商品の要約、注意点、成分、使い方をあなたの言語で確認できます。",
+          title: "韓国商品、\n買う前にチェック。",
+          subtitle: "バーコードをスキャンすると、商品の要約、注意点、\n成分、使い方をあなたの言語で確認できます。",
           desc: "",
           point1: "どんな商品かすばやく理解",
           point2: "注意点を事前に確認",
           point3: "旅行中の買い物ミスを減らす",
           langHeading: "言語を選択",
           scanIntroKicker: "Korean Product Guide",
-          scanIntroTitle: "韓国商品、買う前にチェック。",
-          scanIntroSubtitle: "バーコードをスキャンすると、商品の要約、注意点、成分、使い方をあなたの言語で確認できます。",
+          scanIntroTitle: "韓国商品、\n買う前にチェック。",
+          scanIntroSubtitle: "バーコードをスキャンすると、商品の要約、注意点、\n成分、使い方をあなたの言語で確認できます。",
           scanIntroDesc: "",
           scanTipsTitle: "スキャンのヒント",
           scanTips: [
@@ -607,13 +706,13 @@
           },
           about: {
             heading: "これは何ですか？",
-            storyTitle: "Our Story",
+            storyTitle: "開発の背景",
             storyBody: "化粧品やスナックなどの韓国商品が販売されている実際の売り場で、多くの旅行者が言語の壁により商品を十分に理解できていないことに気づきました。韓国旅行中の買い物をより便利で安全にするため、このサービスを開発しました。",
-            doTitle: "What We Do",
+            doTitle: "できること",
             doBody: "気になる商品のバーコードをスキャンすると、商品の要約、注意点、成分、使い方などをあなたの言語で確認できます。",
-            howTitle: "How It Works",
+            howTitle: "使い方",
             howSteps: ["商品のバーコードをスキャン、またはバーコード番号を入力", "該当する商品を検索", "重要な商品情報を確認", "より安心して購入を判断"],
-            dataTitle: "Data & Accuracy",
+            dataTitle: "データと正確性",
             dataBody: "商品情報は収集データ、公開情報、AIによる要約をもとに提供しています。購入または使用前に実際の商品ラベルをご確認ください。"
           }
         },
@@ -636,6 +735,12 @@
         inAppDesc: "正確にスキャンするため、SafariまたはChromeで開いてください。",
         copyLink: "リンクをコピー",
         copied: "リンクをコピーしました。",
+        shareLink: "この商品を共有",
+        shareTitle: "Korean Product Guideの商品情報",
+        shareText: "韓国で買う前に、この商品の情報を確認できます。",
+        shareCopied: "商品リンクをコピーしました。",
+        shareShared: "共有画面を開きました。",
+        shareCopyFailed: "コピーに失敗しました。ブラウザのアドレスを直接コピーしてください。",
         inAppNote: "コピー後、SafariまたはChromeのアドレスバーに貼り付けてください。",
         labels: {
           description: "説明",
@@ -652,16 +757,16 @@
       "cn": {
         home: {
           kicker: "Korean Product Guide",
-          title: "韩国商品，购买前先确认。",
-          subtitle: "扫描条形码，即可用你的语言查看商品摘要、注意事项、成分和用法。",
+          title: "韩国商品，\n购买前先确认。",
+          subtitle: "扫描条形码，即可用你的语言查看商品摘要、\n注意事项、成分和用法。",
           desc: "",
           point1: "快速了解这是什么商品",
           point2: "提前查看需要注意的地方",
           point3: "减少旅行购物时买错的风险",
           langHeading: "选择语言",
           scanIntroKicker: "Korean Product Guide",
-          scanIntroTitle: "韩国商品，购买前先确认。",
-          scanIntroSubtitle: "扫描条形码，即可用你的语言查看商品摘要、注意事项、成分和用法。",
+          scanIntroTitle: "韩国商品，\n购买前先确认。",
+          scanIntroSubtitle: "扫描条形码，即可用你的语言查看商品摘要、\n注意事项、成分和用法。",
           scanIntroDesc: "",
           scanTipsTitle: "扫描提示",
           scanTips: [
@@ -701,13 +806,13 @@
           },
           about: {
             heading: "这是什么服务？",
-            storyTitle: "Our Story",
+            storyTitle: "我们的故事",
             storyBody: "我们在化妆品、零食等韩国商品销售现场发现，许多旅行者因为语言障碍，难以充分理解商品信息。我们开发这项服务，是为了让韩国旅行中的购物更方便、更安心。",
-            doTitle: "What We Do",
+            doTitle: "我们提供什么",
             doBody: "扫描你感兴趣商品的条形码后，可以用你的语言查看商品摘要、注意事项、成分、用法等信息。",
-            howTitle: "How It Works",
+            howTitle: "使用方式",
             howSteps: ["扫描商品条形码或输入条形码号码", "查找对应商品", "查看关键商品信息", "更有信心地做出购买决定"],
-            dataTitle: "Data & Accuracy",
+            dataTitle: "数据与准确性",
             dataBody: "商品信息基于已收集的数据、公开资料和AI辅助摘要提供。购买或使用前，请以实际商品标签为准。"
           }
         },
@@ -730,6 +835,12 @@
         inAppDesc: "为了准确扫描，请在 Safari 或 Chrome 中打开此页面。",
         copyLink: "复制链接",
         copied: "链接已复制。",
+        shareLink: "分享此商品",
+        shareTitle: "Korean Product Guide 商品信息",
+        shareText: "在韩国购买前，可以先查看这个商品的信息。",
+        shareCopied: "商品链接已复制。",
+        shareShared: "已打开分享窗口。",
+        shareCopyFailed: "复制失败。请直接复制浏览器地址栏中的链接。",
         inAppNote: "复制后，请在 Safari 或 Chrome 地址栏中粘贴打开。",
         labels: {
           description: "说明",
@@ -746,16 +857,16 @@
       "tw": {
         home: {
           kicker: "Korean Product Guide",
-          title: "韓國商品，購買前先確認。",
-          subtitle: "掃描條碼，即可用你的語言查看商品摘要、注意事項、成分與用法。",
+          title: "韓國商品，\n購買前先確認。",
+          subtitle: "掃描條碼，即可用你的語言查看商品摘要、\n注意事項、成分與用法。",
           desc: "",
           point1: "快速了解這是什麼商品",
           point2: "提前查看需要注意的地方",
           point3: "降低旅行購物時買錯的風險",
           langHeading: "選擇語言",
           scanIntroKicker: "Korean Product Guide",
-          scanIntroTitle: "韓國商品，購買前先確認。",
-          scanIntroSubtitle: "掃描條碼，即可用你的語言查看商品摘要、注意事項、成分與用法。",
+          scanIntroTitle: "韓國商品，\n購買前先確認。",
+          scanIntroSubtitle: "掃描條碼，即可用你的語言查看商品摘要、\n注意事項、成分與用法。",
           scanIntroDesc: "",
           scanTipsTitle: "掃描提示",
           scanTips: [
@@ -795,13 +906,13 @@
           },
           about: {
             heading: "這是什麼服務？",
-            storyTitle: "Our Story",
+            storyTitle: "我們的故事",
             storyBody: "我們在化妝品、零食等韓國商品銷售現場發現，許多旅客因語言障礙，難以充分理解商品資訊。我們開發這項服務，是為了讓韓國旅行中的購物更方便、更安心。",
-            doTitle: "What We Do",
+            doTitle: "我們提供什麼",
             doBody: "掃描你感興趣商品的條碼後，可以用你的語言查看商品摘要、注意事項、成分、用法等資訊。",
-            howTitle: "How It Works",
+            howTitle: "使用方式",
             howSteps: ["掃描商品條碼或輸入條碼號碼", "查找對應商品", "查看重點商品資訊", "更有信心地做出購買決定"],
-            dataTitle: "Data & Accuracy",
+            dataTitle: "資料與準確性",
             dataBody: "商品資訊基於已收集資料、公開資訊與AI輔助摘要提供。購買或使用前，請以實際商品標籤為準。"
           }
         },
@@ -824,6 +935,12 @@
         inAppDesc: "為了準確掃描，請在 Safari 或 Chrome 中開啟此頁面。",
         copyLink: "複製連結",
         copied: "連結已複製。",
+        shareLink: "分享此商品",
+        shareTitle: "Korean Product Guide 商品資訊",
+        shareText: "在韓國購買前，可以先查看這個商品的資訊。",
+        shareCopied: "商品連結已複製。",
+        shareShared: "已開啟分享視窗。",
+        shareCopyFailed: "複製失敗。請直接複製瀏覽器網址列中的連結。",
         inAppNote: "複製後，請在 Safari 或 Chrome 的網址列貼上開啟。",
         labels: {
           description: "說明",
@@ -863,9 +980,18 @@
       return isSupportedLang(savedLang) ? savedLang : getBrowserLang();
     }
 
+    function applyLocaleTypography(lang) {
+      const cleanLang = isSupportedLang(lang) ? lang : "en";
+      const htmlElement = document.documentElement;
+
+      htmlElement.dataset.lang = cleanLang;
+      htmlElement.lang = cleanLang === "cn" ? "zh-CN" : cleanLang === "tw" ? "zh-TW" : cleanLang;
+    }
+
     function updateLanguageScreenText() {
       const lang = getLanguageScreenLang();
       const home = (translations[lang] || translations.en).home || translations.en.home;
+      applyLocaleTypography(lang);
 
       document.getElementById("home-kicker").textContent = home.kicker;
       document.getElementById("home-title").textContent = home.title;
@@ -1090,6 +1216,64 @@
       }
     }
 
+    function setLanguageSwitchButtonText(buttonId, label) {
+      const button = document.getElementById(buttonId);
+      const labelElement = button.querySelector(".language-switch-label");
+      if (labelElement) labelElement.textContent = label;
+      button.setAttribute("aria-label", label);
+    }
+
+    function setShareStatus(message = "", type = "") {
+      shareStatus.textContent = message;
+      shareStatus.className = "share-status";
+      if (type) shareStatus.classList.add(type);
+      shareStatus.classList.toggle("hidden", !message);
+    }
+
+    function getProductShareUrl() {
+      const url = new URL(window.location.href);
+      const barcode = barcodeInput.value.trim();
+      const lang = getCurrentLang();
+
+      if (barcode) {
+        url.searchParams.set("barcode", barcode);
+        url.searchParams.set("lang", lang);
+      }
+
+      return url.toString();
+    }
+
+    function getProductSharePayload(text, shareUrl) {
+      return {
+        title: text.shareTitle || document.title,
+        text: text.shareText || text.shareLink || "",
+        url: shareUrl
+      };
+    }
+
+    async function copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-1000px";
+      textarea.style.left = "-1000px";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      if (!copied) {
+        throw new Error("copy_failed");
+      }
+    }
+
     function normalizeScannedCode(rawValue) {
       const value = String(rawValue || "").trim();
       const match = value.match(/\d{8,14}/);
@@ -1169,6 +1353,7 @@
       barcodeInput.value = "";
       statusMessage.textContent = "";
       statusMessage.classList.add("hidden");
+      setShareStatus();
       hideMissingReport();
       clearPendingQr();
       isProcessingScan = false;
@@ -1179,6 +1364,7 @@
       const lang = getCurrentLang();
       const common = data.common || {};
       const langData = data[lang] || data.en || data.ko || {};
+      setShareStatus();
 
       document.getElementById("label-description").textContent = text.labels.description;
       document.getElementById("label-volume").textContent = text.labels.volume;
@@ -1479,6 +1665,7 @@
       screen.classList.remove("hidden");
       window.scrollTo(0, 0);
       
+      applyLocaleTypography(screen === languageScreen ? getLanguageScreenLang() : getCurrentLang());
       const text = t();
 
       if (screen === languageScreen) {
@@ -1499,7 +1686,7 @@
         updateReportText(home);
         updateAboutText(home);
         document.getElementById("scan-guide-text").textContent = text.scanGuide;
-        document.getElementById("change-language-from-scan").textContent = text.changeLanguage;
+        setLanguageSwitchButtonText("change-language-from-scan", text.changeLanguage);
         searchBtn.textContent = text.searchBtn;
         barcodeInput.placeholder = text.placeholder;
         startCameraBtn.textContent = text.cameraBtn;
@@ -1507,9 +1694,11 @@
         updateInAppVisibility();
       } else if (screen === detailScreen) {
         document.getElementById("detail-title").textContent = text.detailTitle;
-        document.getElementById("change-language-from-detail").textContent = text.changeLanguage;
+        setLanguageSwitchButtonText("change-language-from-detail", text.changeLanguage);
         backToScanBtn.textContent = text.backBtn;
         newScanBtn.textContent = text.newScanBtn;
+        copyProductLinkLabel.textContent = text.shareLink || translations.en.shareLink;
+        copyProductLinkBtn.setAttribute("aria-label", text.shareLink || translations.en.shareLink);
       }
     }
 
@@ -1571,14 +1760,56 @@
       const text = t();
 
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await copyToClipboard(window.location.href);
         statusMessage.textContent = text.copied;
         statusMessage.classList.remove("hidden", "error");
       } catch (err) {
-        barcodeInput.value = window.location.href;
-        barcodeInput.select();
-        statusMessage.textContent = text.copied;
+        statusMessage.textContent = text.shareCopyFailed || text.alertUnknown;
         statusMessage.classList.remove("hidden", "error");
+        statusMessage.classList.add("error");
+      }
+    });
+
+    copyProductLinkBtn.addEventListener("click", async () => {
+      const text = t();
+      const shareUrl = getProductShareUrl();
+      const sharePayload = getProductSharePayload(text, shareUrl);
+
+      if (navigator.share) {
+        try {
+          await navigator.share(sharePayload);
+          setShareStatus(text.shareShared || text.shareCopied || text.copied, "success");
+          trackEvent("product_shared", {
+            barcode: barcodeInput.value.trim(),
+            url: shareUrl,
+            method: "native_share"
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") {
+            trackEvent("product_share_cancelled", {
+              barcode: barcodeInput.value.trim(),
+              method: "native_share"
+            });
+            return;
+          }
+        }
+      }
+
+      try {
+        await copyToClipboard(shareUrl);
+        setShareStatus(text.shareCopied || text.copied, "success");
+        trackEvent("product_shared", {
+          barcode: barcodeInput.value.trim(),
+          url: shareUrl,
+          method: "copy_link"
+        });
+      } catch (err) {
+        setShareStatus(text.shareCopyFailed || text.alertUnknown, "error");
+        trackEvent("product_link_copy_failed", {
+          barcode: barcodeInput.value.trim(),
+          error_message: err.message || ""
+        });
       }
     });
 
@@ -1824,3 +2055,6 @@
   </script>
 </body>
 </html>
+
+
+
