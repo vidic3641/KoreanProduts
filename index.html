@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -473,6 +473,7 @@
             "바코드가 인식되지 않으면 바코드 번호를 직접 입력해 주세요.",
             "빛 번짐이나 강한 반사가 있으면 인식이 어려울 수 있습니다.",
             "바코드가 손상되었거나 접혀 있으면 제대로 인식되지 않을 수 있습니다.",
+            "바코드 근처에 QR코드가 있다면 QR코드를 가리고 바코드만 보이게 촬영해 주세요.",
             "바코드가 카메라 안내선 안에 들어오도록 맞춰 주세요.",
             "카메라 초점이 맞을 때까지 잠시 고정해 주세요."
           ],
@@ -489,9 +490,9 @@
             error: "전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
           },
           report: {
-            title: "해당 바코드로 등록된 상품이 없습니다.",
-            desc: "상품 전면 사진과 바코드 사진을 보내주시면 더 빠르게 추가할 수 있어요.",
-            openBtn: "상품 제보하기",
+            title: "아직 등록되지 않은 상품입니다.",
+            desc: "상품 추가를 요청하시겠어요? 상품 전면 사진과 바코드 사진을 보내주시면 추가에 도움이 됩니다.",
+            openBtn: "상품 추가 요청하기",
             productPhotoLabel: "상품 전면 사진",
             barcodePhotoLabel: "바코드 사진",
             noteLabel: "추가 설명 (선택)",
@@ -526,7 +527,7 @@
         cameraBtn: "카메라 열기",
         loading: "조회 중...",
         cameraLoading: "카메라 준비 중...",
-        alertDbMissing: "아직 등록되지 않은 상품입니다. 다른 상품을 스캔하거나 바코드를 직접 입력해주세요.",
+        alertDbMissing: "아직 등록되지 않은 상품입니다. 상품 추가를 요청하시겠어요?",
         alertScanMismatch: "바코드는 인식되었지만 상품정보를 찾지 못했습니다.",
         alertCameraError: "카메라를 실행할 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.",
         alertUnknown: "알 수 없는 오류가 발생했습니다.",
@@ -573,6 +574,7 @@
             "If the barcode is not detected, enter the barcode number manually.",
             "Glare or strong reflection can make scanning difficult.",
             "Damaged or folded barcodes may not scan correctly.",
+            "If there is a QR code near the barcode, cover the QR code and keep only the barcode visible.",
             "Keep the barcode inside the camera guide box.",
             "Hold still for a moment until the camera focuses."
           ],
@@ -589,9 +591,9 @@
             error: "Failed to send. Please try again later."
           },
           report: {
-            title: "No product is registered for this barcode yet.",
-            desc: "Send us a product front photo and a barcode photo to help us add it faster.",
-            openBtn: "Report this product",
+            title: "This product is not registered yet.",
+            desc: "Would you like to request adding it? Send a product front photo and barcode photo to help us add it.",
+            openBtn: "Request product addition",
             productPhotoLabel: "Product front photo",
             barcodePhotoLabel: "Barcode photo",
             noteLabel: "Additional note (optional)",
@@ -626,7 +628,7 @@
         cameraBtn: "Open Camera",
         loading: "Searching...",
         cameraLoading: "Starting camera...",
-        alertDbMissing: "This product is not yet in our database. Please try another product or enter the barcode manually.",
+        alertDbMissing: "This product is not registered yet. Would you like to request adding it?",
         alertScanMismatch: "Barcode detected, but product information could not be matched.",
         alertCameraError: "Unable to start camera. Please check browser camera permissions.",
         alertUnknown: "An unknown error occurred.",
@@ -673,6 +675,7 @@
             "バーコードが認識されない場合は、番号を直接入力してください。",
             "光の反射や強い映り込みがあると、読み取りにくい場合があります。",
             "バーコードが破損していたり折れていたりすると、正しく読み取れない場合があります。",
+            "バーコードの近くにQRコードがある場合は、QRコードを隠してバーコードだけが見えるように撮影してください。",
             "バーコードがカメラのガイド枠内に入るように合わせてください。",
             "カメラのピントが合うまで少し固定してください。"
           ],
@@ -689,9 +692,9 @@
             error: "送信に失敗しました。しばらくしてからもう一度お試しください。"
           },
           report: {
-            title: "このバーコードの商品はまだ登録されていません。",
-            desc: "商品の正面写真とバーコード写真を送ると、より早く追加できます。",
-            openBtn: "この商品を報告する",
+            title: "まだ登録されていない商品です。",
+            desc: "商品追加をリクエストしますか？商品の正面写真とバーコード写真を送っていただくと、追加の参考になります。",
+            openBtn: "商品追加をリクエストする",
             productPhotoLabel: "商品の正面写真",
             barcodePhotoLabel: "バーコード写真",
             noteLabel: "追加説明（任意）",
@@ -726,7 +729,7 @@
         cameraBtn: "カメラ起動",
         loading: "検索中...",
         cameraLoading: "カメラ準備中...",
-        alertDbMissing: "この商品はまだデータベースに登録されていません。別の商品をスキャンするか、バーコードを直接入力してください。",
+        alertDbMissing: "まだ登録されていない商品です。商品追加をリクエストしますか？",
         alertScanMismatch: "バーコードは認識されましたが、商品情報と一致しませんでした。",
         alertCameraError: "カメラを起動できません。ブラウザのカメラ権限を確認してください。",
         alertUnknown: "不明なエラーが発生しました。",
@@ -773,6 +776,7 @@
             "如果无法识别条形码，请手动输入条形码号码。",
             "强光反射或眩光可能会影响识别。",
             "条形码破损或折叠时，可能无法正确识别。",
+            "如果条形码附近有二维码，请遮住二维码，只让条形码显示在画面中。",
             "请将条形码放在摄像头引导框内。",
             "请保持稳定片刻，等待摄像头对焦。"
           ],
@@ -789,9 +793,9 @@
             error: "发送失败。请稍后再试。"
           },
           report: {
-            title: "该条形码尚未注册商品。",
-            desc: "请发送商品正面照片和条形码照片，帮助我们更快添加。",
-            openBtn: "报告此商品",
+            title: "该商品尚未注册。",
+            desc: "要请求添加商品吗？请发送商品正面照片和条形码照片，帮助我们添加。",
+            openBtn: "请求添加商品",
             productPhotoLabel: "商品正面照片",
             barcodePhotoLabel: "条形码照片",
             noteLabel: "补充说明（可选）",
@@ -826,7 +830,7 @@
         cameraBtn: "开启摄像头",
         loading: "查询中...",
         cameraLoading: "准备摄像头...",
-        alertDbMissing: "该商品尚未收录到数据库中。请尝试其他商品或手动输入条形码。",
+        alertDbMissing: "该商品尚未注册。要请求添加商品吗？",
         alertScanMismatch: "条码已识别，但未能匹配到商品信息。",
         alertCameraError: "无法启动摄像头。请检查浏览器摄像头权限。",
         alertUnknown: "发生未知错误。",
@@ -873,6 +877,7 @@
             "如果無法辨識條碼，請手動輸入條碼號碼。",
             "強光反射或眩光可能會影響辨識。",
             "條碼破損或折疊時，可能無法正確辨識。",
+            "如果條碼附近有QR碼，請遮住QR碼，只讓條碼顯示在畫面中。",
             "請將條碼放在攝像頭引導框內。",
             "請保持穩定片刻，等待攝像頭對焦。"
           ],
@@ -889,9 +894,9 @@
             error: "傳送失敗。請稍後再試。"
           },
           report: {
-            title: "此條碼尚未註冊商品。",
-            desc: "請傳送商品正面照片和條碼照片，幫助我們更快新增。",
-            openBtn: "回報此商品",
+            title: "此商品尚未註冊。",
+            desc: "要請求新增商品嗎？請傳送商品正面照片和條碼照片，幫助我們新增。",
+            openBtn: "請求新增商品",
             productPhotoLabel: "商品正面照片",
             barcodePhotoLabel: "條碼照片",
             noteLabel: "補充說明（選填）",
@@ -926,7 +931,7 @@
         cameraBtn: "開啟攝像頭",
         loading: "查詢中...",
         cameraLoading: "準備攝像頭...",
-        alertDbMissing: "此商品尚未收錄到資料庫中。請嘗試其他商品或手動輸入條碼。",
+        alertDbMissing: "此商品尚未註冊。要請求新增商品嗎？",
         alertScanMismatch: "條碼已辨識，但無法匹配商品資訊。",
         alertCameraError: "無法啟動攝像頭。請檢查瀏覽器攝像頭權限。",
         alertUnknown: "發生未知錯誤。",
@@ -1186,6 +1191,57 @@
       return { barcode, lang };
     }
 
+    function getUrlTrackingParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        utm_source: params.get("utm_source") || "",
+        utm_medium: params.get("utm_medium") || "",
+        utm_campaign: params.get("utm_campaign") || ""
+      };
+    }
+
+    function logNotFoundBarcode({ barcode, candidates = [], source = "" } = {}) {
+      const cleanBarcode = String(barcode || "").trim();
+      if (!cleanBarcode) return;
+
+      const trackingParams = getUrlTrackingParams();
+
+      fetch("/api/logNotFoundBarcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          barcode: cleanBarcode,
+          candidates,
+          lang: getCurrentLang(),
+          source,
+          url: window.location.href,
+          path: window.location.pathname,
+          referrer: document.referrer || "",
+          userAgent: navigator.userAgent || "",
+          ...trackingParams
+        })
+      }).then(response => {
+        if (response.ok) {
+          trackEvent("not_found_barcode_logged", {
+            barcode: cleanBarcode,
+            source
+          });
+          return;
+        }
+
+        trackEvent("not_found_barcode_log_failed", {
+          barcode: cleanBarcode,
+          source,
+          status: response.status
+        });
+      }).catch(err => {
+        trackEvent("not_found_barcode_log_failed", {
+          barcode: cleanBarcode,
+          source,
+          error_message: err.message || ""
+        });
+      });
+    }
     function isIOS() {
       return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
@@ -1456,18 +1512,22 @@
           return;
         }
 
+        const notFoundSource = isFromScan ? "scan" : "manual_or_url";
+
         trackEvent("product_not_found", {
           barcode: rawBarcode,
           candidates,
           input_length: rawBarcode.length,
-          source: isFromScan ? "scan" : "manual_or_url"
+          source: notFoundSource
         });
 
-        if (isFromScan) {
-          statusMessage.textContent = text.alertScanMismatch + " " + text.alertDbMissing;
-        } else {
-          statusMessage.textContent = text.alertDbMissing;
-        }
+        logNotFoundBarcode({
+          barcode: rawBarcode,
+          candidates,
+          source: notFoundSource
+        });
+
+        statusMessage.textContent = text.alertDbMissing;
 
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
