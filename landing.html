@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>韓国コスメを買う前に日本語で確認 | Korean Products Guide</title>
+  <meta name="description" content="韓国コスメの使い方と注意点を、購入前に日本語で確認。バーコードスキャンと無料チェックリストを利用できます。">
+  <meta property="og:title" content="韓国コスメを買う前に、使い方と注意点を日本語で確認。">
+  <meta property="og:description" content="バーコードで商品情報を確認。無料チェックリストも配布中。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/landing-ja-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f5f7f4">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog&&window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture register register_once get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init("phc_D3tBoy75TVgsCWuaCyaSFAqWET5vaxCDfVdgiZh6WmbT", {
+      api_host: "https://us.i.posthog.com",
+      defaults: "2026-01-30",
+      person_profiles: "identified_only"
+    });
+  </script>
+
+  <style>
+    :root {
+      --bg: #f5f7f4;
+      --surface: #ffffff;
+      --text: #121512;
+      --sub: #59615b;
+      --line: #dce2dc;
+      --green: #176b52;
+      --green-dark: #0f4b3a;
+      --green-soft: #e5f2eb;
+      --coral: #db654a;
+      --yellow: #f4c95d;
+      --black: #111311;
+      --safe-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans JP", system-ui, sans-serif;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; }
+    button, input, select, textarea, a { font: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    svg { display: block; }
+
+    .container { width: 100%; max-width: 440px; margin: 0 auto; }
+    .hero {
+      position: relative;
+      min-height: 92svh;
+      padding: calc(16px + env(safe-area-inset-top)) 16px 26px;
+      background: #eef1ec;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image: url("assets/landing-ja-hero.png");
+      background-position: 12% center;
+      background-size: cover;
+      filter: blur(2px) saturate(0.75);
+      transform: scale(1.03);
+      opacity: 0.45;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(250,252,249,0.97) 0%, rgba(250,252,249,0.8) 44%, rgba(238,242,237,0.92) 100%);
+    }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand { font-size: 12px; font-weight: 900; }
+    .free-label { padding: 6px 9px; border: 1px solid rgba(18,21,18,.14); border-radius: 999px; background: rgba(255,255,255,.78); font-size: 10px; font-weight: 900; }
+    .hero-copy { margin-top: 28px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 12px; font-weight: 900; }
+    h1 { margin: 0; font-size: 31px; line-height: 1.2; font-weight: 900; letter-spacing: 0; word-break: keep-all; }
+    .hero-description { margin: 12px 0 0; color: #303630; font-size: 14px; line-height: 1.65; font-weight: 700; word-break: keep-all; }
+
+    .scan-scene { position: relative; height: 294px; margin-top: 18px; }
+    .product-prop {
+      position: absolute;
+      left: 8px;
+      bottom: 12px;
+      width: 112px;
+      height: 164px;
+      padding: 14px 12px;
+      border: 1px solid rgba(18,21,18,.12);
+      background: #f9fbf7;
+      box-shadow: 0 16px 34px rgba(20,30,23,.14);
+      transform: rotate(-4deg);
+    }
+    .product-prop::before { content: "K-BEAUTY"; display: block; color: var(--green); font-size: 9px; font-weight: 900; }
+    .product-prop::after { content: "|||| ||| || ||||"; position: absolute; left: 15px; right: 15px; bottom: 15px; color: #151815; font-family: monospace; font-size: 10px; letter-spacing: 0; white-space: nowrap; overflow: hidden; }
+    .product-name-prop { margin-top: 30px; font-size: 14px; line-height: 1.25; font-weight: 900; }
+    .product-note-prop { margin-top: 8px; color: var(--sub); font-size: 9px; line-height: 1.45; }
+
+    .phone {
+      position: absolute;
+      right: 4px;
+      bottom: 0;
+      width: 214px;
+      height: 286px;
+      padding: 8px;
+      border: 2px solid #151815;
+      border-radius: 28px;
+      background: #151815;
+      box-shadow: 0 20px 40px rgba(16,24,18,.25);
+      transform: rotate(2deg);
+    }
+    .phone::before { content: ""; position: absolute; z-index: 3; top: 13px; left: 50%; width: 62px; height: 16px; border-radius: 999px; background: #151815; transform: translateX(-50%); }
+    .phone-screen { position: relative; height: 100%; border-radius: 20px; overflow: hidden; background: #dce6df; }
+    .scan-camera { position: absolute; inset: 0; background: linear-gradient(145deg,#edf1ec,#b7c6ba); }
+    .scan-camera::before { content: ""; position: absolute; inset: 42px 18px 54px; border: 2px solid rgba(255,255,255,.9); border-radius: 8px; box-shadow: 0 0 0 500px rgba(9,18,12,.25); }
+    .scan-camera::after { content: ""; position: absolute; left: 28px; right: 28px; top: 50%; height: 2px; background: #79efb8; box-shadow: 0 0 14px #79efb8; }
+    .barcode-card { position: absolute; left: 50%; top: 50%; width: 112px; height: 62px; padding: 9px; background: #fafaf7; transform: translate(-50%,-50%) rotate(-2deg); }
+    .barcode-lines { height: 32px; background: repeating-linear-gradient(90deg,#151815 0 2px,transparent 2px 5px,#151815 5px 6px,transparent 6px 9px); }
+    .scan-label { position: absolute; left: 10px; right: 10px; bottom: 12px; padding: 10px; border-radius: 6px; background: rgba(255,255,255,.92); text-align: center; font-size: 11px; font-weight: 900; }
+
+    .hero-actions { display: grid; gap: 9px; margin-top: 18px; }
+    .cta {
+      width: 100%;
+      min-height: 56px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .cta-primary { background: var(--green-dark); color: #fff; box-shadow: 0 10px 24px rgba(15,75,58,.2); }
+    .cta-secondary { border-color: #bcc7bf; background: rgba(255,255,255,.86); color: var(--text); }
+    .cta:active { transform: translateY(1px); }
+    .cta svg { width: 18px; height: 18px; }
+    .trust-row { display: flex; justify-content: center; gap: 12px; margin-top: 10px; color: #364039; font-size: 10px; font-weight: 800; }
+    .trust-row span::before { content: "✓"; margin-right: 3px; color: var(--green); }
+
+    .section { padding: 38px 16px; border-top: 1px solid var(--line); }
+    .section-white { background: var(--surface); }
+    .section-dark { background: var(--black); color: #fff; }
+    .section-green { background: var(--green-soft); }
+    .section-kicker { margin: 0 0 8px; color: var(--coral); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .section-dark .section-kicker { color: #79deb7; }
+    h2 { margin: 0; font-size: 24px; line-height: 1.4; font-weight: 900; letter-spacing: 0; word-break: keep-all; }
+    .section-lead { margin: 11px 0 0; color: var(--sub); font-size: 14px; line-height: 1.75; word-break: keep-all; }
+    .section-dark .section-lead { color: #b9c2bb; }
+
+    .category-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 20px; }
+    .category-item { min-height: 124px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; }
+    .category-icon { width: 34px; height: 34px; display: grid; place-items: center; margin-bottom: 16px; border-radius: 50%; background: var(--green-soft); color: var(--green-dark); }
+    .category-icon svg { width: 18px; height: 18px; }
+    .category-item strong { display: block; font-size: 14px; font-weight: 900; }
+    .category-item span { display: block; margin-top: 5px; color: var(--sub); font-size: 11px; line-height: 1.55; }
+
+    .result-layout { display: grid; gap: 22px; margin-top: 22px; }
+    .result-phone-wrap { display: flex; justify-content: center; }
+    .result-phone { position: relative; width: 254px; height: 510px; padding: 9px; border-radius: 32px; background: #080a08; box-shadow: 0 22px 46px rgba(0,0,0,.35); }
+    .result-phone::before { content: ""; position: absolute; z-index: 2; top: 14px; left: 50%; width: 72px; height: 17px; border-radius: 999px; background: #080a08; transform: translateX(-50%); }
+    .result-screen { height: 100%; padding: 32px 12px 16px; border-radius: 23px; background: #f4f6f4; overflow: hidden; color: var(--text); }
+    .screen-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 10px; font-weight: 900; }
+    .screen-lang { color: #1f5fce; }
+    .result-head { padding: 13px; border: 1px solid #e0e4e0; border-radius: 8px; background: #fff; }
+    .result-brand { margin: 0; color: var(--sub); font-size: 9px; font-weight: 900; }
+    .result-name { margin: 4px 0 8px; font-size: 17px; line-height: 1.3; font-weight: 900; }
+    .result-chip { display: inline-block; padding: 4px 7px; border-radius: 999px; background: #e9efeb; color: #3e4740; font-size: 8px; font-weight: 800; }
+    .result-summary { margin: 8px 0 0; color: var(--sub); font-size: 9px; line-height: 1.55; }
+    .result-section { padding: 10px; margin-top: 7px; border: 1px solid #e0e4e0; border-radius: 7px; background: #fff; }
+    .result-section strong { display: block; color: #475049; font-size: 9px; font-weight: 900; }
+    .result-section p { margin: 4px 0 0; font-size: 9px; line-height: 1.52; }
+    .result-caption { text-align: center; color: #b9c2bb; font-size: 11px; line-height: 1.6; }
+
+    .steps { display: grid; gap: 1px; margin-top: 22px; border: 1px solid var(--line); background: var(--line); }
+    .step { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 12px; padding: 16px; background: #fff; }
+    .step-icon { width: 38px; height: 38px; display: grid; place-items: center; color: var(--green-dark); }
+    .step-icon svg { width: 24px; height: 24px; }
+    .step-title { margin: 0; font-size: 15px; font-weight: 900; }
+    .step-text { margin: 4px 0 0; color: var(--sub); font-size: 12px; line-height: 1.6; }
+
+    .lead-layout { display: grid; gap: 24px; margin-top: 22px; }
+    .checklist-mockup { position: relative; min-height: 292px; display: grid; place-items: center; }
+    .checklist-shadow { position: absolute; width: 190px; height: 260px; border-radius: 4px; background: #b8c5bc; transform: rotate(7deg) translate(14px,5px); }
+    .checklist-cover { position: relative; width: 190px; height: 260px; padding: 20px; border: 1px solid #cad3cc; border-radius: 4px; background: #fff; box-shadow: 0 20px 38px rgba(32,50,38,.2); }
+    .pdf-mark { display: inline-flex; padding: 4px 7px; background: var(--coral); color: #fff; font-size: 9px; font-weight: 900; }
+    .checklist-cover h3 { margin: 18px 0 0; font-size: 20px; line-height: 1.45; font-weight: 900; }
+    .checklist-cover p { margin: 10px 0 0; color: var(--sub); font-size: 11px; line-height: 1.6; }
+    .checklist-lines { display: grid; gap: 10px; margin-top: 22px; }
+    .checklist-line { display: grid; grid-template-columns: 14px 1fr; gap: 8px; align-items: center; font-size: 10px; font-weight: 700; }
+    .checklist-box { width: 13px; height: 13px; border: 2px solid var(--green); }
+
+    .lead-form { display: grid; gap: 13px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 12px; font-weight: 900; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid #b9c4bc;
+      border-radius: 6px;
+      padding: 11px 12px;
+      background: #fff;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .field input:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(23,107,82,.1); }
+    .form-note { margin: 0; color: var(--sub); font-size: 10px; line-height: 1.65; }
+    .form-note a { color: var(--green-dark); font-weight: 800; text-underline-offset: 2px; }
+    .form-status { display: none; margin: 0; padding: 10px 12px; border-left: 3px solid var(--coral); background: #fff6f2; color: #76301f; font-size: 11px; line-height: 1.6; }
+    .form-status.visible { display: block; }
+
+    .notice { padding: 14px; margin-top: 20px; border-left: 3px solid var(--green); background: #eef4f0; color: #3f4942; font-size: 11px; line-height: 1.7; }
+    .footer { padding: 28px 16px calc(28px + env(safe-area-inset-bottom)); text-align: center; color: var(--sub); font-size: 11px; }
+    .footer a { font-weight: 800; text-decoration: none; }
+    .sticky-scan { position: fixed; z-index: 30; left: 12px; right: 12px; bottom: var(--safe-bottom); opacity: 0; transform: translateY(14px); pointer-events: none; transition: .2s ease; }
+    .sticky-scan.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .sticky-scan .cta { min-height: 52px; }
+
+    @media (max-width: 360px) {
+      h1 { font-size: 28px; }
+      .scan-scene { height: 272px; }
+      .phone { width: 196px; height: 268px; }
+      .product-prop { width: 102px; height: 152px; }
+      .trust-row { gap: 8px; font-size: 9px; }
+    }
+    @media (min-width: 760px) {
+      .container { max-width: 920px; }
+      .hero { min-height: 88vh; padding-left: 32px; padding-right: 32px; }
+      .hero .container { display: grid; grid-template-columns: minmax(0,1fr) 420px; gap: 40px; align-items: center; }
+      .brand-row { grid-column: 1 / -1; }
+      .hero-copy { margin-top: 10px; }
+      h1 { font-size: 42px; }
+      .scan-scene { grid-column: 2; grid-row: 2 / 4; width: 390px; }
+      .hero-actions { grid-column: 1; width: 390px; }
+      .category-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+      .result-layout { grid-template-columns: 300px minmax(0,1fr); align-items: center; }
+      .result-caption { text-align: left; font-size: 13px; }
+      .lead-layout { grid-template-columns: 270px minmax(0,1fr); align-items: center; }
+      .sticky-scan { left: 50%; right: auto; width: 430px; transform: translate(-50%,14px); }
+      .sticky-scan.visible { transform: translate(-50%,0); }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="container">
+      <div class="brand-row">
+        <div class="brand">Korean Products Guide</div>
+        <div class="free-label">無料・アプリ不要</div>
+      </div>
+
+      <div class="hero-copy">
+        <p class="eyebrow">韓国旅行中のコスメ選びを、もっと安心に。</p>
+        <h1>韓国コスメを買う前に、<br>使い方と注意点を<br>日本語で確認。</h1>
+        <p class="hero-description">SNSで見た人気商品でも、使い方や注意点を知らずに買うと、あとで迷うことがあります。購入前にバーコードで確認できます。</p>
+      </div>
+
+      <div class="scan-scene" aria-label="スマートフォンで商品バーコードをスキャンする画面イメージ">
+        <div class="product-prop" aria-hidden="true">
+          <div class="product-name-prop">SKIN CARE<br>ESSENCE 100</div>
+          <div class="product-note-prop">Daily care product<br>Made in Korea</div>
+        </div>
+        <div class="phone" aria-hidden="true">
+          <div class="phone-screen">
+            <div class="scan-camera"></div>
+            <div class="barcode-card"><div class="barcode-lines"></div></div>
+            <div class="scan-label">バーコードを枠内に合わせてください</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="hero-scan"><i data-lucide="scan-line"></i>バーコードで試す</a>
+        <a class="cta cta-secondary js-checklist-link" href="#checklist" data-position="hero-checklist"><i data-lucide="file-check-2"></i>旅行前チェックリストを見る</a>
+        <div class="trust-row"><span>無料</span><span>登録不要</span><span>アプリ不要</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section section-white">
+      <div class="container">
+        <p class="section-kicker">Why check first?</p>
+        <h2>人気だけで選ぶと、使い方で迷うことがあります。</h2>
+        <p class="section-lead">韓国コスメは、商品によって使う順番・頻度・注意点が異なります。</p>
+        <div class="category-grid">
+          <article class="category-item"><div class="category-icon"><i data-lucide="sparkles"></i></div><strong>レチノール</strong><span>毎日使う前に、頻度と併用を確認</span></article>
+          <article class="category-item"><div class="category-icon"><i data-lucide="circle-dot"></i></div><strong>トナーパッド</strong><span>拭き取り方と使用頻度を確認</span></article>
+          <article class="category-item"><div class="category-icon"><i data-lucide="sun"></i></div><strong>日焼け止め</strong><span>SPFだけでなく、使い方も確認</span></article>
+          <article class="category-item"><div class="category-icon"><i data-lucide="zap"></i></div><strong>リードルショット</strong><span>刺激感と使用順序を事前に確認</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-dark">
+      <div class="container">
+        <p class="section-kicker">Scan result</p>
+        <h2>バーコードを読み取ると、こんな情報が表示されます。</h2>
+        <div class="result-layout">
+          <div class="result-phone-wrap">
+            <div class="result-phone" aria-label="日本語の商品情報結果画面の例">
+              <div class="result-screen">
+                <div class="screen-top"><span>商品詳細</span><span class="screen-lang">Language</span></div>
+                <div class="result-head">
+                  <p class="result-brand">K-BEAUTY SAMPLE</p>
+                  <div class="result-name">リードルショット 100</div>
+                  <span class="result-chip">導入美容液</span>
+                  <p class="result-summary">使用前に刺激感と使う順番を確認したいスキンケア商品です。</p>
+                </div>
+                <div class="result-section"><strong>使い方</strong><p>洗顔後、化粧水の前に少量を肌になじませます。</p></div>
+                <div class="result-section"><strong>注意点</strong><p>初めて使う場合は少量から。目元や傷のある部分は避けてください。</p></div>
+                <div class="result-section"><strong>成分確認ポイント</strong><p>購入・使用前に実際の商品ラベルも確認してください。</p></div>
+              </div>
+            </div>
+          </div>
+          <p class="result-caption">画面イメージです。実際のサービスでは、登録された商品ごとに商品の要約、使い方、注意点、成分確認ポイントなどを日本語で表示します。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-white">
+      <div class="container">
+        <p class="section-kicker">How it works</p>
+        <h2>使い方は、たった3ステップ。</h2>
+        <div class="steps">
+          <article class="step"><div class="step-icon"><i data-lucide="scan-barcode"></i></div><div><h3 class="step-title">商品のバーコードをスキャン</h3><p class="step-text">カメラで読み取るか、バーコード番号を入力します。</p></div></article>
+          <article class="step"><div class="step-icon"><i data-lucide="languages"></i></div><div><h3 class="step-title">日本語で使い方を確認</h3><p class="step-text">商品の特徴や使用順序を、その場で確認します。</p></div></article>
+          <article class="step"><div class="step-icon"><i data-lucide="shield-check"></i></div><div><h3 class="step-title">注意点を見てから購入</h3><p class="step-text">自分に合うか考えてから、購入を決められます。</p></div></article>
+        </div>
+        <div style="margin-top:18px;"><a class="cta cta-secondary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="steps-scan"><i data-lucide="scan-line"></i>バーコードスキャンを試す</a></div>
+      </div>
+    </section>
+
+    <section class="section section-green" id="checklist">
+      <div class="container">
+        <p class="section-kicker">Free checklist</p>
+        <h2>韓国オリヤンでコスメを買う前に見るチェックリスト。</h2>
+        <p class="section-lead">旅行前に保存して、店頭で商品を選ぶときに使える無料チェックリストです。</p>
+        <div class="lead-layout">
+          <div class="checklist-mockup" aria-label="無料チェックリストPDFの表紙イメージ">
+            <div class="checklist-shadow"></div>
+            <div class="checklist-cover">
+              <span class="pdf-mark">FREE PDF</span>
+              <h3>韓国オリヤンで<br>コスメを買う前に<br>見るチェックリスト</h3>
+              <p>使い方・頻度・注意点を購入前に確認</p>
+              <div class="checklist-lines">
+                <div class="checklist-line"><span class="checklist-box"></span><span>使う順番を確認</span></div>
+                <div class="checklist-line"><span class="checklist-box"></span><span>使用頻度を確認</span></div>
+                <div class="checklist-line"><span class="checklist-box"></span><span>注意点を確認</span></div>
+              </div>
+            </div>
+          </div>
+
+          <form class="lead-form" id="lead-form" novalidate>
+            <div class="field">
+              <label for="lead-email">メールアドレス</label>
+              <input id="lead-email" name="email" type="email" autocomplete="email" placeholder="example@email.com" required>
+            </div>
+            <div class="field">
+              <label for="travel-period">韓国旅行の予定</label>
+              <select id="travel-period" name="travelPeriod" required>
+                <option value="">選択してください</option>
+                <option value="within-1-month">1か月以内</option>
+                <option value="within-3-months">3か月以内</option>
+                <option value="within-6-months">6か月以内</option>
+                <option value="someday">時期は未定</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="interest">一番知りたい情報</label>
+              <select id="interest" name="interest" required>
+                <option value="">選択してください</option>
+                <option value="usage">使い方・使用順序</option>
+                <option value="caution">注意点・刺激感</option>
+                <option value="ingredients">成分確認ポイント</option>
+                <option value="purchase_points">購入前に確認したいポイント</option>
+              </select>
+            </div>
+            <button class="cta cta-primary" type="submit"><i data-lucide="mail-check"></i>無料チェックリストを受け取る</button>
+            <p class="form-note">ご入力いただいたメールアドレスおよびアンケートの回答は、チェックリストの送付、サービスのテストおよび改善のために使用します。送信前に<a href="/privacy.html" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+            <p class="form-status" id="form-status" role="status"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-white">
+      <div class="container">
+        <h2>店頭にいるなら、今すぐ商品を確認できます。</h2>
+        <p class="section-lead">無料・会員登録不要・アプリ不要。スマートフォンのブラウザから利用できます。</p>
+        <div style="margin-top:18px;"><a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="bottom-scan"><i data-lucide="scan-line"></i>今すぐバーコードで確認</a></div>
+        <div class="notice">商品情報は収集データ、公開情報、AIによる要約をもとに提供しています。購入または使用前に、実際の商品ラベルもご確認ください。</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>Korean Products Guide</div>
+    <div style="margin-top:8px;"><a href="https://www.instagram.com/Korean.Product.Guide/" target="_blank" rel="noopener noreferrer">Instagram @Korean.Product.Guide</a></div>
+    <div style="margin-top:8px;"><a href="/privacy.html">プライバシーポリシー</a></div>
+  </footer>
+
+  <div class="sticky-scan" id="sticky-scan">
+    <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="sticky-scan"><i data-lucide="scan-line"></i>バーコードで試す</a>
+  </div>
+
+  <script>
+    const SCANNER_BASE_URL = "https://korean-products-guide.vercel.app/";
+    const LEAD_ENDPOINT = "";
+    const passthroughKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"];
+
+    function capture(eventName, properties = {}) {
+      if (!window.posthog || typeof window.posthog.capture !== "function") return;
+      window.posthog.capture(eventName, { language: "ja", ...properties });
+    }
+
+    function buildScannerUrl() {
+      const landingParams = new URLSearchParams(window.location.search);
+      const scannerUrl = new URL(SCANNER_BASE_URL);
+      scannerUrl.searchParams.set("lang", "ja");
+      passthroughKeys.forEach(key => {
+        const value = landingParams.get(key);
+        if (value) scannerUrl.searchParams.set(key, value);
+      });
+      scannerUrl.searchParams.set("entry", "landing-ja");
+      return scannerUrl.toString();
+    }
+
+    const scannerUrl = buildScannerUrl();
+    document.querySelectorAll(".js-scan-link").forEach(link => {
+      link.href = scannerUrl;
+      link.addEventListener("click", () => capture("landing_scan_cta_clicked", {
+        position: link.dataset.position || "unknown",
+        destination: scannerUrl
+      }));
+    });
+
+    document.querySelectorAll(".js-checklist-link").forEach(link => {
+      link.addEventListener("click", () => capture("checklist_cta_clicked", {
+        position: link.dataset.position || "unknown"
+      }));
+    });
+
+    const leadForm = document.getElementById("lead-form");
+    const formStatus = document.getElementById("form-status");
+    let leadFormViewed = false;
+    const leadObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !leadFormViewed) {
+          leadFormViewed = true;
+          capture("lead_form_opened");
+        }
+      });
+    }, { threshold: .45 });
+    leadObserver.observe(leadForm);
+
+    leadForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      formStatus.className = "form-status";
+
+      if (!leadForm.checkValidity()) {
+        leadForm.reportValidity();
+        return;
+      }
+
+      const formData = Object.fromEntries(new FormData(leadForm).entries());
+      if (!LEAD_ENDPOINT) {
+        formStatus.textContent = "送信先がまだ設定されていません。公開前にGoogleフォームまたはApps ScriptのURLを接続してください。";
+        formStatus.classList.add("visible");
+        capture("lead_submit_blocked", {
+          travel_period: formData.travelPeriod,
+          interest: formData.interest,
+          reason: "endpoint_not_configured"
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch(LEAD_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, source: "landing-ja", pageUrl: window.location.href })
+        });
+        if (!response.ok) throw new Error(`http_${response.status}`);
+        leadForm.reset();
+        formStatus.textContent = "ありがとうございます。チェックリストの案内をメールでお送りします。";
+        formStatus.classList.add("visible");
+        capture("lead_submitted", { travel_period: formData.travelPeriod, interest: formData.interest });
+      } catch (error) {
+        formStatus.textContent = "送信できませんでした。しばらくしてからもう一度お試しください。";
+        formStatus.classList.add("visible");
+        capture("lead_submit_failed", { error_message: error.message || "" });
+      }
+    });
+
+    const stickyScan = document.getElementById("sticky-scan");
+    const heroActions = document.querySelector(".hero-actions");
+    const stickyObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => stickyScan.classList.toggle("visible", !entry.isIntersecting));
+    }, { threshold: .1 });
+    stickyObserver.observe(heroActions);
+
+    capture("landing_viewed", { path: window.location.pathname, query: window.location.search });
+    if (window.lucide) window.lucide.createIcons();
+  </script>
+</body>
+</html>
