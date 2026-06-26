@@ -60,8 +60,8 @@
     .container { width: 100%; max-width: 440px; margin: 0 auto; }
     .hero {
       position: relative;
-      min-height: 92svh;
-      padding: calc(16px + env(safe-area-inset-top)) 16px 26px;
+      min-height: auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px 18px;
       background: #eef1ec;
       overflow: hidden;
       isolation: isolate;
@@ -157,6 +157,7 @@
     .trust-row span::before { content: "✓"; margin-right: 3px; color: var(--green); }
 
     .section { padding: 38px 16px; border-top: 1px solid var(--line); }
+    .hero + main .section:first-child { padding-top: 24px; }
     .section-white { background: var(--surface); }
     .section-dark { background: var(--black); color: #fff; }
     .section-green { background: var(--green-soft); }
@@ -165,6 +166,19 @@
     h2 { margin: 0; font-size: 24px; line-height: 1.4; font-weight: 900; letter-spacing: 0; word-break: keep-all; }
     .section-lead { margin: 11px 0 0; color: var(--sub); font-size: 14px; line-height: 1.75; word-break: keep-all; }
     .section-dark .section-lead { color: #b9c2bb; }
+    :lang(ja) h1,
+    :lang(ja) h2,
+    :lang(ja) .hero-description,
+    :lang(ja) .section-lead,
+    :lang(ja) .category-item span,
+    :lang(ja) .checklist-cover h3,
+    :lang(ja) .checklist-cover p,
+    :lang(ja) .step-text,
+    :lang(ja) .form-note {
+      word-break: normal;
+      overflow-wrap: anywhere;
+      line-break: strict;
+    }
 
     .category-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 20px; }
     .category-item { min-height: 124px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; }
@@ -244,7 +258,7 @@
     }
     @media (min-width: 760px) {
       .container { max-width: 920px; }
-      .hero { min-height: 88vh; padding-left: 32px; padding-right: 32px; }
+      .hero { min-height: auto; padding-left: 32px; padding-right: 32px; }
       .hero .container { display: grid; grid-template-columns: minmax(0,1fr) 420px; gap: 40px; align-items: center; }
       .brand-row { grid-column: 1 / -1; }
       .hero-copy { margin-top: 10px; }
