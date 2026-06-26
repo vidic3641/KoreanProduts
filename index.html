@@ -93,6 +93,9 @@
       z-index: 10;
     }
     #reader-video { width: 100%; min-height: 220px; object-fit: cover; display: block; background: #000; }
+    .scan-status-overlay { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 20; padding: 10px 12px; border-radius: 13px; background: rgba(17, 24, 39, 0.9); color: #fff; font-size: 13px; line-height: 1.45; font-weight: 800; text-align: center; box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
+    .scan-status-overlay.error { background: rgba(185, 28, 28, 0.94); }
+    .scan-status-overlay.success { background: rgba(15, 118, 110, 0.94); }
 
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 16px; background: #fafbfc; min-height: 150px; display: flex; align-items: center; justify-content: center; padding: 18px; text-align: center; margin-bottom: 12px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
@@ -258,6 +261,7 @@
 
         <div id="reader">
           <video id="reader-video" muted playsinline></video>
+          <div class="scan-status-overlay hidden" id="scan-status-overlay" aria-live="polite"></div>
         </div>
 
         <div class="scan-guide-box" id="scan-placeholder">
@@ -415,6 +419,7 @@
     const barcodeInput = document.getElementById("barcode-input");
     const searchBtn = document.getElementById("search-btn");
     const statusMessage = document.getElementById("status-message");
+    const scanStatusOverlay = document.getElementById("scan-status-overlay");
     const startCameraBtn = document.getElementById("start-camera-btn");
     const scanPlaceholder = document.getElementById("scan-placeholder");
     const readerElement = document.getElementById("reader");
@@ -446,6 +451,7 @@
     let mediaStream = null;
     let barcodeDetector = null;
     let barcodeDetectorTimer = null;
+    let scanNoReadTimer = null;
     let zxingReader = null;
     let zxingControls = null;
     let isProcessingScan = false;
@@ -527,6 +533,9 @@
         cameraBtn: "카메라 열기",
         loading: "조회 중...",
         cameraLoading: "카메라 준비 중...",
+        scanCameraActive: "카메라가 켜졌습니다. 바코드를 안내선 안에 맞춰주세요.",
+        scanNoReadYet: "아직 바코드를 인식하지 못했습니다. 안내선 안에 맞추거나 번호를 직접 입력해 주세요.",
+        scanDetected: "바코드를 읽었습니다. 상품 정보를 찾는 중입니다.",
         alertDbMissing: "아직 등록되지 않은 상품입니다.",
         alertScanMismatch: "바코드는 인식되었지만 상품정보를 찾지 못했습니다.",
         alertCameraError: "카메라를 실행할 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.",
@@ -628,6 +637,9 @@
         cameraBtn: "Open Camera",
         loading: "Searching...",
         cameraLoading: "Starting camera...",
+        scanCameraActive: "Camera is on. Place the barcode inside the guide box.",
+        scanNoReadYet: "The barcode has not been detected yet. Align it inside the guide box or enter the number manually.",
+        scanDetected: "Barcode detected. Searching for product information.",
         alertDbMissing: "This product is not registered yet.",
         alertScanMismatch: "Barcode detected, but product information could not be matched.",
         alertCameraError: "Unable to start camera. Please check browser camera permissions.",
@@ -729,6 +741,9 @@
         cameraBtn: "カメラ起動",
         loading: "検索中...",
         cameraLoading: "カメラ準備中...",
+        scanCameraActive: "カメラが起動しました。バーコードを枠内に合わせてください。",
+        scanNoReadYet: "まだバーコードを認識できていません。枠内に合わせるか、番号を直接入力してください。",
+        scanDetected: "バーコードを認識しました。商品情報を検索しています。",
         alertDbMissing: "まだ登録されていない商品です。",
         alertScanMismatch: "バーコードは認識されましたが、商品情報と一致しませんでした。",
         alertCameraError: "カメラを起動できません。ブラウザのカメラ権限を確認してください。",
@@ -830,6 +845,9 @@
         cameraBtn: "开启摄像头",
         loading: "查询中...",
         cameraLoading: "准备摄像头...",
+        scanCameraActive: "摄像头已开启。请将条形码对准取景框。",
+        scanNoReadYet: "尚未识别到条形码。请对准取景框，或手动输入号码。",
+        scanDetected: "已识别条形码。正在查询商品信息。",
         alertDbMissing: "该商品尚未注册。",
         alertScanMismatch: "条码已识别，但未能匹配到商品信息。",
         alertCameraError: "无法启动摄像头。请检查浏览器摄像头权限。",
@@ -931,6 +949,9 @@
         cameraBtn: "開啟攝像頭",
         loading: "查詢中...",
         cameraLoading: "準備攝像頭...",
+        scanCameraActive: "攝像頭已開啟。請將條碼對準取景框。",
+        scanNoReadYet: "尚未辨識到條碼。請對準取景框，或手動輸入號碼。",
+        scanDetected: "已辨識條碼。正在查詢商品資訊。",
         alertDbMissing: "此商品尚未註冊。",
         alertScanMismatch: "條碼已辨識，但無法匹配商品資訊。",
         alertCameraError: "無法啟動攝像頭。請檢查瀏覽器攝像頭權限。",
@@ -1067,6 +1088,32 @@
       return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).feedback || translations.en.home.feedback;
     }
 
+    function setScanStatusOverlay(message = "", type = "") {
+      scanStatusOverlay.textContent = message;
+      scanStatusOverlay.className = "scan-status-overlay";
+      if (type) scanStatusOverlay.classList.add(type);
+      scanStatusOverlay.classList.toggle("hidden", !message);
+    }
+
+    function clearScanNoReadTimer() {
+      if (scanNoReadTimer) {
+        clearTimeout(scanNoReadTimer);
+        scanNoReadTimer = null;
+      }
+    }
+
+    function startScanNoReadTimer() {
+      clearScanNoReadTimer();
+      scanNoReadTimer = setTimeout(() => {
+        if (!isProcessingScan && readerVideo.srcObject) {
+          const text = t();
+          setScanStatusOverlay(text.scanNoReadYet || text.scanGuide);
+          trackEvent("barcode_scan_no_read_hint_shown", {
+            lang: getCurrentLang()
+          });
+        }
+      }, 7000);
+    }
     function getReportText() {
       return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).report || translations.en.home.report;
     }
@@ -1376,6 +1423,8 @@
 
       isProcessingScan = true;
       barcodeInput.value = code;
+      clearScanNoReadTimer();
+      setScanStatusOverlay(t().scanDetected || t().loading, "success");
 
       trackEvent("barcode_scanned", {
         barcode: code
@@ -1409,6 +1458,8 @@
       barcodeInput.value = "";
       statusMessage.textContent = "";
       statusMessage.classList.add("hidden");
+      clearScanNoReadTimer();
+      setScanStatusOverlay();
       setShareStatus();
       hideMissingReport();
       clearPendingQr();
@@ -1471,6 +1522,7 @@
 
       statusMessage.textContent = text.loading;
       statusMessage.classList.remove("hidden", "error");
+      setScanStatusOverlay(text.loading);
       hideMissingReport();
       searchBtn.disabled = true;
 
@@ -1507,6 +1559,7 @@
           });
 
           statusMessage.classList.add("hidden");
+          setScanStatusOverlay();
           showScreen(detailScreen);
           await stopScanning();
           return;
@@ -1528,6 +1581,7 @@
         });
 
         statusMessage.textContent = text.alertDbMissing;
+        setScanStatusOverlay(text.alertDbMissing, "error");
 
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
@@ -1536,6 +1590,7 @@
       } catch (err) {
         console.error("Search Error:", err);
         statusMessage.textContent = text.alertUnknown;
+        setScanStatusOverlay(text.alertUnknown, "error");
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
       } finally {
@@ -1640,6 +1695,8 @@
 
       statusMessage.textContent = text.cameraLoading;
       statusMessage.classList.remove("hidden", "error");
+      clearScanNoReadTimer();
+      setScanStatusOverlay(text.cameraLoading);
       isProcessingScan = false;
       clearPendingQr();
       
@@ -1649,6 +1706,7 @@
         scanPlaceholder.classList.add("hidden");
         readerElement.style.display = "block";
         startCameraBtn.classList.add("hidden");
+        setScanStatusOverlay(text.cameraLoading);
 
         const canUseBarcodeDetector = "BarcodeDetector" in window && !isIOS();
 
@@ -1665,6 +1723,8 @@
         });
 
         statusMessage.classList.add("hidden");
+        setScanStatusOverlay(text.scanCameraActive || text.scanGuide);
+        startScanNoReadTimer();
 
       } catch (err) {
         console.error("Camera Error:", err);
@@ -1678,6 +1738,7 @@
         } catch (e) {}
 
         statusMessage.textContent = text.alertCameraError;
+        setScanStatusOverlay();
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
         scanPlaceholder.classList.remove("hidden");
@@ -1689,6 +1750,8 @@
 
     async function stopScanning() {
       clearPendingQr();
+      clearScanNoReadTimer();
+      setScanStatusOverlay();
 
       if (barcodeDetectorTimer) {
         cancelAnimationFrame(barcodeDetectorTimer);
