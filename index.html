@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -465,7 +465,7 @@
     let pendingQrTimer = null;
     let pendingQrValue = "";
     let lastMissingBarcode = "";
-
+    let lastCameraErrorContext = null;
     const translations = {
       "ko": {
         home: {
@@ -545,7 +545,13 @@
         scanDetected: "바코드를 읽었습니다. 상품 정보를 찾는 중입니다.",
         alertDbMissing: "아직 등록되지 않은 상품입니다.",
         alertScanMismatch: "바코드는 인식되었지만 상품정보를 찾지 못했습니다.",
-        alertCameraError: "카메라를 실행할 수 없습니다. 브라우저의 카메라 권한을 확인해주세요.",
+        alertCameraError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
+        alertCameraPermissionError: "카메라 권한이 꺼져 있어요. 권한을 허용하거나 바코드 번호를 직접 입력해 주세요.",
+        alertCameraNotFoundError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
+        alertCameraInUseError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
+        alertCameraEngineError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
+        alertCameraUnsupportedError: "현재 환경에서는 카메라 스캔이 어려워요. Safari 또는 Chrome에서 열거나 바코드 번호를 직접 입력해 주세요.",
+        alertCameraConstraintError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
         alertUnknown: "알 수 없는 오류가 발생했습니다.",
         placeholder: "바코드 번호 직접 입력",
         inAppTitle: "브라우저에서 열어주세요",
@@ -649,7 +655,13 @@
         scanDetected: "Barcode detected. Searching for product information.",
         alertDbMissing: "This product is not registered yet.",
         alertScanMismatch: "Barcode detected, but product information could not be matched.",
-        alertCameraError: "Unable to start camera. Please check browser camera permissions.",
+        alertCameraError: "Camera is not available right now. Please enter the barcode number manually.",
+        alertCameraPermissionError: "Camera access is off. Please allow camera access or enter the barcode number manually.",
+        alertCameraNotFoundError: "Camera is not available right now. Please enter the barcode number manually.",
+        alertCameraInUseError: "Camera is not available right now. Please enter the barcode number manually.",
+        alertCameraEngineError: "Camera is not available right now. Please enter the barcode number manually.",
+        alertCameraUnsupportedError: "Camera scanning may not work in this browser. Please open this page in Safari or Chrome, or enter the barcode number manually.",
+        alertCameraConstraintError: "Camera is not available right now. Please enter the barcode number manually.",
         alertUnknown: "An unknown error occurred.",
         placeholder: "Enter barcode manually",
         inAppTitle: "Open in browser",
@@ -753,7 +765,13 @@
         scanDetected: "バーコードを認識しました。商品情報を検索しています。",
         alertDbMissing: "まだ登録されていない商品です。",
         alertScanMismatch: "バーコードは認識されましたが、商品情報と一致しませんでした。",
-        alertCameraError: "カメラを起動できません。ブラウザのカメラ権限を確認してください。",
+        alertCameraError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
+        alertCameraPermissionError: "カメラの許可がオフになっています。カメラを許可するか、バーコード番号を直接入力してください。",
+        alertCameraNotFoundError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
+        alertCameraInUseError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
+        alertCameraEngineError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
+        alertCameraUnsupportedError: "このブラウザではカメラスキャンがうまく動作しない場合があります。SafariまたはChromeで開くか、バーコード番号を直接入力してください。",
+        alertCameraConstraintError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
         alertUnknown: "不明なエラーが発生しました。",
         placeholder: "バーコード番号を直接入力",
         inAppTitle: "ブラウザで開いてください",
@@ -857,7 +875,13 @@
         scanDetected: "已识别条形码。正在查询商品信息。",
         alertDbMissing: "该商品尚未注册。",
         alertScanMismatch: "条码已识别，但未能匹配到商品信息。",
-        alertCameraError: "无法启动摄像头。请检查浏览器摄像头权限。",
+        alertCameraError: "现在无法使用摄像头。请手动输入条形码号码。",
+        alertCameraPermissionError: "摄像头权限已关闭。请允许摄像头权限，或手动输入条形码号码。",
+        alertCameraNotFoundError: "现在无法使用摄像头。请手动输入条形码号码。",
+        alertCameraInUseError: "现在无法使用摄像头。请手动输入条形码号码。",
+        alertCameraEngineError: "现在无法使用摄像头。请手动输入条形码号码。",
+        alertCameraUnsupportedError: "此浏览器可能无法正常使用摄像头扫描。请在 Safari 或 Chrome 中打开，或手动输入条形码号码。",
+        alertCameraConstraintError: "现在无法使用摄像头。请手动输入条形码号码。",
         alertUnknown: "发生未知错误。",
         placeholder: "手动输入条码",
         inAppTitle: "请在浏览器中打开",
@@ -961,7 +985,13 @@
         scanDetected: "已辨識條碼。正在查詢商品資訊。",
         alertDbMissing: "此商品尚未註冊。",
         alertScanMismatch: "條碼已辨識，但無法匹配商品資訊。",
-        alertCameraError: "無法啟動攝像頭。請檢查瀏覽器攝像頭權限。",
+        alertCameraError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
+        alertCameraPermissionError: "攝像頭權限已關閉。請允許攝像頭權限，或手動輸入條碼號碼。",
+        alertCameraNotFoundError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
+        alertCameraInUseError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
+        alertCameraEngineError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
+        alertCameraUnsupportedError: "此瀏覽器可能無法正常使用攝像頭掃描。請在 Safari 或 Chrome 中開啟，或手動輸入條碼號碼。",
+        alertCameraConstraintError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
         alertUnknown: "發生未知錯誤。",
         placeholder: "手動輸入條碼",
         inAppTitle: "請在瀏覽器中開啟",
@@ -1212,6 +1242,31 @@
       } catch (e) {}
     }
 
+    function trackManualBarcodeSearch(barcode, trigger) {
+      if (!barcode) return;
+
+      trackEvent("barcode_manual_search", {
+        barcode,
+        trigger
+      });
+
+      if (!lastCameraErrorContext) return;
+
+      const secondsAfterCameraError = Math.max(0, Math.round((Date.now() - lastCameraErrorContext.at) / 1000));
+
+      trackEvent("manual_barcode_after_camera_error", {
+        barcode,
+        trigger,
+        seconds_after_camera_error: secondsAfterCameraError,
+        camera_error_type: lastCameraErrorContext.error_type || "",
+        permission_state: lastCameraErrorContext.permission_state || "",
+        engine: lastCameraErrorContext.engine || "",
+        is_ios: lastCameraErrorContext.is_ios === true,
+        zxing_load_status: lastCameraErrorContext.zxing_load_status || ""
+      });
+
+      lastCameraErrorContext = null;
+    }
     function isSupportedLang(lang) {
       return Object.prototype.hasOwnProperty.call(translations, lang);
     }
@@ -1305,6 +1360,50 @@
       return /Instagram|FBAN|FBAV|TikTok|Bytedance|Musical_ly|YouTube|Line|KAKAOTALK|MicroMessenger|Twitter|XiaoHongShu|XHS/i.test(ua);
     }
 
+    function getCameraErrorType(err) {
+      const name = String(err && err.name || "").toLowerCase();
+      const message = String(err && err.message || "").toLowerCase();
+
+      if (message.includes("zxing is not loaded") || window.__zxingLoadStatus === "failed") {
+        return "barcode_engine_load_failed";
+      }
+      if (!window.isSecureContext) {
+        return "insecure_context";
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return "camera_api_unsupported";
+      }
+      if (name === "notallowederror" || name === "permissiondeniederror" || name === "securityerror") {
+        return "permission_denied";
+      }
+      if (name === "notfounderror" || name === "devicesnotfounderror") {
+        return "camera_not_found";
+      }
+      if (name === "notreadableerror" || name === "trackstarterror" || name === "aborterror") {
+        return "camera_unavailable";
+      }
+      if (name === "overconstrainederror" || name === "constraintnotsatisfiederror") {
+        return "camera_constraints";
+      }
+      return "unknown_camera_error";
+    }
+
+    function getCameraErrorMessage(errorType) {
+      const text = t();
+      if (errorType === "permission_denied") return text.alertCameraPermissionError || text.alertCameraError;
+      if (errorType === "camera_api_unsupported" || errorType === "insecure_context") return text.alertCameraUnsupportedError || text.alertCameraError;
+      return text.alertCameraError;
+    }
+
+    async function getCameraPermissionState() {
+      try {
+        if (!navigator.permissions || !navigator.permissions.query) return "unsupported";
+        const status = await navigator.permissions.query({ name: "camera" });
+        return status.state || "unknown";
+      } catch (e) {
+        return "unsupported";
+      }
+    }
     function updateInAppBoxText() {
       const text = t();
       document.getElementById("inapp-title").textContent = text.inAppTitle;
@@ -1732,6 +1831,7 @@
           zxing_load_status: window.__zxingLoadStatus || "unknown"
         });
 
+        lastCameraErrorContext = null;
         statusMessage.classList.add("hidden");
         setScanStatusOverlay(text.scanCameraActive || text.scanGuide);
         startScanNoReadTimer();
@@ -1739,20 +1839,36 @@
       } catch (err) {
         console.error("Camera Error:", err);
 
-        trackEvent("camera_error", {
-          error_message: err.message,
+        const cameraErrorType = getCameraErrorType(err);
+        const cameraPermissionState = await getCameraPermissionState();
+
+        const cameraErrorContext = {
+          error_type: cameraErrorType,
+          error_name: err.name || "",
+          error_message: err.message || "",
           engine: canUseBarcodeDetector ? "barcode_detector" : "zxing",
           is_ios: isIOS(),
           barcode_detector_supported: "BarcodeDetector" in window,
           zxing_loaded: !!window.ZXingBrowser,
-          zxing_load_status: window.__zxingLoadStatus || "unknown"
-        });
+          zxing_load_status: window.__zxingLoadStatus || "unknown",
+          permission_state: cameraPermissionState,
+          media_devices_supported: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+          is_secure_context: window.isSecureContext === true,
+          user_agent: navigator.userAgent || ""
+        };
+
+        lastCameraErrorContext = {
+          ...cameraErrorContext,
+          at: Date.now()
+        };
+
+        trackEvent("camera_error", cameraErrorContext);
 
         try {
           await stopScanning();
         } catch (e) {}
 
-        statusMessage.textContent = text.alertCameraError;
+        statusMessage.textContent = getCameraErrorMessage(cameraErrorType);
         setScanStatusOverlay();
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
@@ -1875,26 +1991,14 @@
 
     searchBtn.addEventListener("click", () => {
       const manualBarcode = barcodeInput.value.trim();
-
-      if (manualBarcode) {
-        trackEvent("barcode_manual_search", {
-          barcode: manualBarcode
-        });
-      }
-
+      trackManualBarcodeSearch(manualBarcode, "button_click");
       searchProductByBarcode(false);
     });
 
     barcodeInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         const manualBarcode = barcodeInput.value.trim();
-
-        if (manualBarcode) {
-          trackEvent("barcode_manual_search", {
-            barcode: manualBarcode
-          });
-        }
-
+        trackManualBarcodeSearch(manualBarcode, "enter_key");
         searchProductByBarcode(false);
       }
     });
