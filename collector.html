@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ScanKorea 수집 모드</title>
+  <script>
+    window.__zxingLoadStatus = "pending";
+  </script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/zxing-browser.min.js"
+    onload="window.__zxingLoadStatus = 'loaded'"
+    onerror="window.__zxingLoadStatus = 'failed'"
+  ></script>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --text: #111827;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --primary: #0f766e;
+      --primary-text: #ffffff;
+      --blue: #2563eb;
+      --danger: #dc2626;
+      --warning: #b45309;
+      --success: #15803d;
+      --shadow: 0 10px 26px rgba(15, 23, 42, .08);
+      --radius: 8px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { min-height: 100%; margin: 0; background: var(--bg); color: var(--text); }
+    body { font-size: 15px; line-height: 1.45; }
+    button, input { font: inherit; }
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: var(--radius);
+      padding: 0 14px;
+      background: var(--text);
+      color: #fff;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, .14); }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 14px;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      background: rgba(245, 247, 250, .94);
+      backdrop-filter: blur(12px);
+    }
+    .title-group { min-width: 0; }
+    .title {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+      line-height: 1.2;
+    }
+    .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+    .panel-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .panel-body { padding: 14px; }
+    .camera-box {
+      position: relative;
+      overflow: hidden;
+      background: #0b1220;
+      aspect-ratio: 4 / 3;
+      min-height: 260px;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #0b1220;
+    }
+    .scan-guide {
+      position: absolute;
+      inset: 16%;
+      border: 2px solid rgba(255, 255, 255, .82);
+      border-radius: 8px;
+      box-shadow: 0 0 0 999px rgba(0, 0, 0, .24);
+      pointer-events: none;
+    }
+    .scan-status {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      background: rgba(17, 24, 39, .78);
+      color: #fff;
+      text-align: center;
+      font-weight: 750;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .button-secondary { background: #e5e7eb; color: var(--text); }
+    .button-primary { background: var(--primary); color: var(--primary-text); }
+    .button-blue { background: var(--blue); color: #fff; }
+    .button-danger { background: var(--danger); color: #fff; }
+    .button-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .field-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+      margin-top: 10px;
+    }
+    .label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .metric {
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    .metric-value {
+      display: block;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+    .metric-label {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .result-box {
+      margin-top: 10px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+    .result-box.success { border-color: rgba(21, 128, 61, .25); background: #ecfdf3; }
+    .result-box.warning { border-color: rgba(180, 83, 9, .25); background: #fff7ed; }
+    .result-box.error { border-color: rgba(220, 38, 38, .25); background: #fef2f2; }
+    .result-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 850;
+    }
+    .result-meta {
+      margin: 5px 0 0;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .photo-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .photo-chip {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-weight: 800;
+      text-align: center;
+      background: #fff;
+    }
+    .photo-chip.done { color: var(--success); border-color: rgba(21, 128, 61, .28); background: #ecfdf3; }
+    .queue-list {
+      display: grid;
+      gap: 8px;
+      max-height: 400px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .queue-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: #fff;
+    }
+    .queue-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+    .barcode {
+      font-size: 16px;
+      font-weight: 850;
+      word-break: break-all;
+    }
+    .badge {
+      flex: none;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 850;
+      background: #e5e7eb;
+      color: var(--text);
+    }
+    .badge.queued { background: #fff7ed; color: var(--warning); }
+    .badge.uploading { background: #eff6ff; color: var(--blue); }
+    .badge.uploaded { background: #ecfdf3; color: var(--success); }
+    .badge.failed { background: #fef2f2; color: var(--danger); }
+    .small {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .notice {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #854d0e;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 820px) {
+      .app { padding: 10px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .toolbar, .photo-actions { grid-template-columns: 1fr; }
+      .field-row { grid-template-columns: 1fr; }
+      .camera-box { min-height: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-group">
+        <h1 class="title">ScanKorea 수집 모드</h1>
+        <p class="subtitle">미등록 바코드 판별과 사진 2장 수집을 위한 관리자 전용 테스트 화면</p>
+      </div>
+      <button class="button-ghost" id="reload-queue-btn" type="button">대기열 새로고침</button>
+    </header>
+
+    <section class="grid">
+      <div>
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">스캔</h2>
+            <span class="badge" id="mode-badge">준비 중</span>
+          </div>
+          <div class="camera-box">
+            <video id="reader-video" playsinline muted></video>
+            <div class="scan-guide"></div>
+            <div class="scan-status" id="scan-status">관리자 키를 확인하고 목록을 불러와 주세요.</div>
+          </div>
+          <div class="panel-body">
+            <div class="toolbar">
+              <button class="button-primary" id="start-scan-btn" type="button">카메라 시작</button>
+              <button class="button-secondary" id="stop-scan-btn" type="button">카메라 정지</button>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label class="label" for="manual-barcode-input">수동 바코드 입력</label>
+                <input id="manual-barcode-input" inputmode="numeric" autocomplete="off" placeholder="숫자 바코드를 입력">
+              </div>
+              <button class="button-blue" id="manual-check-btn" type="button">확인</button>
+            </div>
+
+            <div class="result-box" id="result-box">
+              <p class="result-title" id="result-title">아직 스캔된 바코드가 없습니다.</p>
+              <p class="result-meta" id="result-meta">카메라를 시작하면 등록 여부를 확인합니다.</p>
+            </div>
+
+            <div class="photo-actions hidden" id="photo-actions">
+              <button class="button-blue" id="capture-product-btn" type="button">상품명/전면 촬영</button>
+              <button class="button-blue" id="capture-barcode-btn" type="button">바코드 라벨 촬영</button>
+            </div>
+            <div class="photo-actions hidden" id="photo-status">
+              <div class="photo-chip" id="product-photo-chip">상품 사진 대기</div>
+              <div class="photo-chip" id="barcode-photo-chip">바코드 사진 대기</div>
+            </div>
+            <div class="toolbar hidden" id="next-actions">
+              <button class="button-primary" id="next-scan-btn" type="button">다음 스캔</button>
+              <button class="button-ghost" id="retry-current-upload-btn" type="button">현재 항목 업로드</button>
+            </div>
+
+            <input class="hidden" id="product-photo-input" type="file" accept="image/*" capture="environment">
+            <input class="hidden" id="barcode-photo-input" type="file" accept="image/*" capture="environment">
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">설정</h2>
+            <button class="button-secondary" id="load-barcodes-btn" type="button">목록 불러오기</button>
+          </div>
+          <div class="panel-body">
+            <label class="label" for="admin-key-input">관리자 키</label>
+            <input id="admin-key-input" autocomplete="off" placeholder="URL key 값 또는 테스트 키">
+            <div class="toolbar">
+              <button class="button-secondary" id="save-key-btn" type="button">키 저장</button>
+              <button class="button-ghost" id="clear-key-btn" type="button">키 삭제</button>
+            </div>
+            <div class="notice" id="config-notice">
+              API 주소가 연결되지 않은 경우에도 로컬 대기열 테스트는 가능합니다. 실제 Google Drive(구글 드라이브)/Google Sheets(구글 스프레드시트) 연동은 서버 API 연결 후 동작합니다.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top: 14px;">
+          <div class="panel-head">
+            <h2 class="panel-title">상태</h2>
+            <button class="button-blue" id="upload-all-btn" type="button">대기 항목 업로드</button>
+          </div>
+          <div class="panel-body">
+            <div class="status-strip">
+              <div class="metric">
+                <span class="metric-value" id="known-count">0</span>
+                <span class="metric-label">기존 바코드</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="queued-count">0</span>
+                <span class="metric-label">업로드 대기</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="uploaded-count">0</span>
+                <span class="metric-label">업로드 완료</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="failed-count">0</span>
+                <span class="metric-label">업로드 실패</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top: 14px;">
+          <div class="panel-head">
+            <h2 class="panel-title">수집 대기열</h2>
+            <button class="button-danger" id="clear-uploaded-btn" type="button">완료 항목 숨김</button>
+          </div>
+          <div class="panel-body">
+            <div class="queue-list" id="queue-list"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const COLLECTOR_CONFIG = {
+      barcodeListUrl: "https://script.google.com/macros/s/AKfycbybYFR-z96oJvnFk8CAeuqpPI3rqppVChZXvFeDlI5QxUyS423Fqq0nwE0fM1CQKWCImg/exec",
+      productCheckUrl: "/api/getProduct",
+      uploadUrl: "https://script.google.com/macros/s/AKfycbybYFR-z96oJvnFk8CAeuqpPI3rqppVChZXvFeDlI5QxUyS423Fqq0nwE0fM1CQKWCImg/exec",
+      imageMaxSize: 1280,
+      imageQuality: 0.78,
+      duplicateCooldownMs: 1600
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const readerVideo = $("reader-video");
+    const scanStatus = $("scan-status");
+    const modeBadge = $("mode-badge");
+    const resultBox = $("result-box");
+    const resultTitle = $("result-title");
+    const resultMeta = $("result-meta");
+    const adminKeyInput = $("admin-key-input");
+    const manualBarcodeInput = $("manual-barcode-input");
+    const photoActions = $("photo-actions");
+    const photoStatus = $("photo-status");
+    const productPhotoChip = $("product-photo-chip");
+    const barcodePhotoChip = $("barcode-photo-chip");
+    const nextActions = $("next-actions");
+    const queueList = $("queue-list");
+
+    let db = null;
+    let mediaStream = null;
+    let barcodeDetector = null;
+    let barcodeDetectorTimer = null;
+    let zxingReader = null;
+    let zxingControls = null;
+    let isProcessingScan = false;
+    let knownBarcodeSet = new Set();
+    let currentItem = null;
+    let lastScan = { barcode: "", at: 0 };
+    let uploadInProgress = false;
+
+    function setStatus(message, tone = "") {
+      scanStatus.textContent = message;
+      modeBadge.textContent = tone === "success" ? "정상" : tone === "error" ? "확인 필요" : tone === "warning" ? "수집 중" : "대기";
+    }
+
+    function setResult(title, meta, tone = "") {
+      resultTitle.textContent = title;
+      resultMeta.textContent = meta || "";
+      resultBox.className = `result-box ${tone}`.trim();
+    }
+
+    function getAdminKey() {
+      return String(adminKeyInput.value || "").trim();
+    }
+
+    function normalizeScannedCode(rawValue) {
+      const value = String(rawValue || "").trim();
+      const match = value.match(/\d{8,14}/);
+      return match ? match[0] : value;
+    }
+
+    function getBarcodeCandidates(rawValue) {
+      const normalized = normalizeScannedCode(rawValue);
+      if (!normalized) return [];
+      const candidates = [normalized];
+      if (/^\d{12}$/.test(normalized)) candidates.push("0" + normalized);
+      return [...new Set(candidates)];
+    }
+
+    function isIOS() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    function getCameraConstraints() {
+      return {
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
+        audio: false
+      };
+    }
+
+    function openCollectorDb() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("scankorea_collector_v1", 1);
+        request.onupgradeneeded = () => {
+          const nextDb = request.result;
+          if (!nextDb.objectStoreNames.contains("items")) {
+            const store = nextDb.createObjectStore("items", { keyPath: "id" });
+            store.createIndex("status", "status", { unique: false });
+            store.createIndex("barcode", "barcode", { unique: false });
+            store.createIndex("createdAt", "createdAt", { unique: false });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function txStore(mode = "readonly") {
+      return db.transaction("items", mode).objectStore("items");
+    }
+
+    function saveItem(item) {
+      return new Promise((resolve, reject) => {
+        const request = txStore("readwrite").put(item);
+        request.onsuccess = () => resolve(item);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function getAllItems() {
+      return new Promise((resolve, reject) => {
+        const request = txStore("readonly").getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function deleteItem(id) {
+      return new Promise((resolve, reject) => {
+        const request = txStore("readwrite").delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function loadKnownBarcodes() {
+      const url = new URL(COLLECTOR_CONFIG.barcodeListUrl, window.location.origin);
+      const key = getAdminKey();
+      if (key) url.searchParams.set("key", key);
+
+      try {
+        const response = await fetch(url.toString(), { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const barcodes = Array.isArray(data) ? data : data.barcodes;
+        if (!Array.isArray(barcodes)) throw new Error("barcodes 배열이 없습니다");
+
+        knownBarcodeSet = new Set(barcodes.map(normalizeScannedCode).filter(Boolean));
+        setStatus(`기존 바코드 ${knownBarcodeSet.size.toLocaleString("ko-KR")}개를 불러왔습니다.`, "success");
+      } catch (error) {
+        knownBarcodeSet = new Set();
+        setStatus("기존 바코드 목록을 불러오지 못했습니다. 스캔 시 서버 조회로 확인합니다.", "warning");
+        console.warn("barcode list load failed", error);
+      }
+
+      updateCounts();
+    }
+
+    async function prepareVideoStream() {
+      mediaStream = await navigator.mediaDevices.getUserMedia(getCameraConstraints());
+      readerVideo.srcObject = mediaStream;
+      await readerVideo.play();
+
+      const track = mediaStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        try {
+          await track.applyConstraints({ advanced: [{ focusMode: "continuous" }] });
+        } catch (e) {}
+      }
+    }
+
+    async function startBarcodeDetectorScanning() {
+      barcodeDetector = new BarcodeDetector({
+        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"]
+      });
+
+      const scan = async () => {
+        if (!barcodeDetector || isProcessingScan || !readerVideo.srcObject) return;
+
+        try {
+          const results = await barcodeDetector.detect(readerVideo);
+          if (results && results.length) {
+            const priority = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"];
+            let selected = null;
+            for (const format of priority) {
+              selected = results.find(item => String(item.format).toLowerCase() === format);
+              if (selected) break;
+            }
+            if (selected) handleDetectedCode(selected.rawValue);
+          }
+        } catch (e) {}
+
+        barcodeDetectorTimer = requestAnimationFrame(scan);
+      };
+
+      barcodeDetectorTimer = requestAnimationFrame(scan);
+    }
+
+    async function startZxingScanning() {
+      if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
+        throw new Error("ZXing is not loaded");
+      }
+
+      zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
+      zxingControls = await zxingReader.decodeFromConstraints(
+        getCameraConstraints(),
+        readerVideo,
+        (result) => {
+          if (!result || isProcessingScan) return;
+          const rawValue = result.getText ? result.getText() : String(result.text || "");
+          handleDetectedCode(rawValue);
+        }
+      );
+    }
+
+    async function startScanning() {
+      if (!window.isSecureContext) {
+        setStatus("카메라는 HTTPS 또는 localhost 환경에서만 안정적으로 동작합니다.", "error");
+        return;
+      }
+
+      try {
+        await stopScanning();
+        isProcessingScan = false;
+        setStatus("카메라를 준비 중입니다.");
+        const canUseBarcodeDetector = "BarcodeDetector" in window && !isIOS();
+
+        if (canUseBarcodeDetector) {
+          await prepareVideoStream();
+          await startBarcodeDetectorScanning();
+        } else {
+          await startZxingScanning();
+        }
+
+        setStatus("스캔 중입니다. 바코드를 안내선 안에 맞춰주세요.", "success");
+      } catch (error) {
+        console.error("camera start failed", error);
+        setStatus("카메라를 시작하지 못했습니다. 권한 또는 브라우저 환경을 확인해 주세요.", "error");
+      }
+    }
+
+    async function stopScanning() {
+      if (barcodeDetectorTimer) {
+        cancelAnimationFrame(barcodeDetectorTimer);
+        barcodeDetectorTimer = null;
+      }
+      barcodeDetector = null;
+
+      if (zxingControls && typeof zxingControls.stop === "function") {
+        try { zxingControls.stop(); } catch (e) {}
+      }
+      zxingControls = null;
+      zxingReader = null;
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      readerVideo.srcObject = null;
+    }
+
+    function handleDetectedCode(rawValue) {
+      const code = normalizeScannedCode(rawValue);
+      if (!code) return;
+
+      const now = Date.now();
+      if (lastScan.barcode === code && now - lastScan.at < COLLECTOR_CONFIG.duplicateCooldownMs) return;
+      lastScan = { barcode: code, at: now };
+
+      inspectBarcode(code);
+    }
+
+    async function inspectBarcode(code) {
+      const candidates = getBarcodeCandidates(code);
+      if (!candidates.length) return;
+
+      isProcessingScan = true;
+      setStatus(`바코드 확인 중: ${candidates[0]}`, "warning");
+
+      const localHit = candidates.some(candidate => knownBarcodeSet.has(candidate));
+      if (localHit) {
+        setResult("이미 등록된 바코드입니다.", candidates.join(", "), "success");
+        setStatus("등록된 상품입니다. 다음 상품을 스캔해 주세요.", "success");
+        setTimeout(() => { isProcessingScan = false; }, 900);
+        return;
+      }
+
+      const serverHit = knownBarcodeSet.size ? false : await checkProductOnServer(candidates);
+      if (serverHit) {
+        setResult("서버에서 등록 상품으로 확인했습니다.", candidates.join(", "), "success");
+        setStatus("등록된 상품입니다. 다음 상품을 스캔해 주세요.", "success");
+        setTimeout(() => { isProcessingScan = false; }, 900);
+        return;
+      }
+
+      await createMissingItem(candidates[0], candidates);
+    }
+
+    async function checkProductOnServer(candidates) {
+      for (const candidate of candidates) {
+        try {
+          const url = new URL(COLLECTOR_CONFIG.productCheckUrl, window.location.origin);
+          url.searchParams.set("barcode", candidate);
+          url.searchParams.set("lang", "ko");
+          const response = await fetch(url.toString(), { cache: "no-store" });
+          if (response.ok) return true;
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    async function createMissingItem(barcode, candidates) {
+      await stopScanning();
+
+      const now = new Date();
+      currentItem = {
+        id: `${Date.now()}-${barcode}`,
+        barcode,
+        candidates,
+        status: "needs_photos",
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        productPhoto: null,
+        barcodePhoto: null,
+        uploadResponse: null,
+        uploadError: ""
+      };
+
+      await saveItem(currentItem);
+      setResult("미등록 바코드입니다. 사진 2장을 촬영해 주세요.", barcode, "warning");
+      setStatus("상품명/전면 사진과 바코드 라벨 사진이 필요합니다.", "warning");
+      photoActions.classList.remove("hidden");
+      photoStatus.classList.remove("hidden");
+      nextActions.classList.add("hidden");
+      updatePhotoStatus();
+      updateCounts();
+      renderQueue();
+    }
+
+    async function capturePhoto(kind, file) {
+      if (!currentItem || !file) return;
+
+      setStatus("사진을 압축하고 내부 저장소에 저장하는 중입니다.", "warning");
+      const blob = await compressImage(file, COLLECTOR_CONFIG.imageMaxSize, COLLECTOR_CONFIG.imageQuality);
+      const photo = {
+        name: `${currentItem.barcode}-${kind}.jpg`,
+        type: blob.type || "image/jpeg",
+        size: blob.size,
+        blob
+      };
+
+      if (kind === "product") currentItem.productPhoto = photo;
+      if (kind === "barcode") currentItem.barcodePhoto = photo;
+
+      currentItem.updatedAt = new Date().toISOString();
+      if (currentItem.productPhoto && currentItem.barcodePhoto) {
+        currentItem.status = "queued";
+      }
+
+      await saveItem(currentItem);
+      updatePhotoStatus();
+      await renderQueue();
+      await updateCounts();
+
+      if (currentItem.status === "queued") {
+        setResult("사진 2장 저장 완료. 업로드 대기열에 추가했습니다.", currentItem.barcode, "success");
+        setStatus("다음 스캔을 진행할 수 있습니다. 업로드는 뒤에서 시도합니다.", "success");
+        photoActions.classList.add("hidden");
+        nextActions.classList.remove("hidden");
+        uploadQueuedItems();
+      } else {
+        setStatus("사진 1장을 저장했습니다. 나머지 사진을 촬영해 주세요.", "warning");
+      }
+    }
+
+    function updatePhotoStatus() {
+      const hasProduct = !!(currentItem && currentItem.productPhoto);
+      const hasBarcode = !!(currentItem && currentItem.barcodePhoto);
+      productPhotoChip.textContent = hasProduct ? "상품 사진 저장됨" : "상품 사진 대기";
+      barcodePhotoChip.textContent = hasBarcode ? "바코드 사진 저장됨" : "바코드 사진 대기";
+      productPhotoChip.classList.toggle("done", hasProduct);
+      barcodePhotoChip.classList.toggle("done", hasBarcode);
+    }
+
+    function compressImage(file, maxSize, quality) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+          const width = Math.max(1, Math.round(image.width * scale));
+          const height = Math.max(1, Math.round(image.height * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(image, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("image_compress_failed"));
+              return;
+            }
+            resolve(blob);
+          }, "image/jpeg", quality);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("image_load_failed"));
+        };
+        image.src = objectUrl;
+      });
+    }
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error || new Error("blob_read_failed"));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function uploadQueuedItems() {
+      if (uploadInProgress) return;
+      uploadInProgress = true;
+
+      try {
+        const allItems = await getAllItems();
+        const targets = allItems
+          .filter(item => item.status === "queued" || item.status === "failed")
+          .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+
+        for (const item of targets) {
+          await uploadItem(item);
+          await updateCounts();
+          await renderQueue();
+        }
+      } finally {
+        uploadInProgress = false;
+      }
+    }
+
+    async function uploadItem(item) {
+      if (!COLLECTOR_CONFIG.uploadUrl) return;
+      if (!item.productPhoto || !item.barcodePhoto) return;
+
+      item.status = "uploading";
+      item.updatedAt = new Date().toISOString();
+      await saveItem(item);
+      await renderQueue();
+
+      try {
+        const payload = {
+          key: getAdminKey(),
+          barcode: item.barcode,
+          candidates: item.candidates || [],
+          created_at: item.createdAt,
+          source: "collector_html",
+          productPhotoData: await blobToDataUrl(item.productPhoto.blob),
+          barcodePhotoData: await blobToDataUrl(item.barcodePhoto.blob)
+        };
+
+        const response = await fetch(COLLECTOR_CONFIG.uploadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json().catch(() => ({}));
+
+        item.status = "uploaded";
+        item.uploadResponse = data;
+        item.uploadError = "";
+        item.updatedAt = new Date().toISOString();
+        await saveItem(item);
+      } catch (error) {
+        item.status = "failed";
+        item.uploadError = error.message || "upload_failed";
+        item.updatedAt = new Date().toISOString();
+        await saveItem(item);
+      }
+    }
+
+    async function renderQueue() {
+      const items = (await getAllItems()).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+      queueList.innerHTML = "";
+
+      if (!items.length) {
+        queueList.innerHTML = '<p class="small">아직 수집 항목이 없습니다.</p>';
+        return;
+      }
+
+      for (const item of items) {
+        const row = document.createElement("div");
+        row.className = "queue-item";
+        const statusText = {
+          needs_photos: "사진 필요",
+          queued: "대기",
+          uploading: "업로드 중",
+          uploaded: "완료",
+          failed: "실패"
+        }[item.status] || item.status;
+
+        row.innerHTML = `
+          <div class="queue-line">
+            <span class="barcode">${escapeHtml(item.barcode)}</span>
+            <span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusText)}</span>
+          </div>
+          <p class="small">${formatDate(item.createdAt)} · 상품사진 ${item.productPhoto ? "있음" : "없음"} · 바코드사진 ${item.barcodePhoto ? "있음" : "없음"}</p>
+          ${item.uploadError ? `<p class="small">오류: ${escapeHtml(item.uploadError)}</p>` : ""}
+        `;
+        queueList.appendChild(row);
+      }
+    }
+
+    async function updateCounts() {
+      const items = db ? await getAllItems() : [];
+      $("known-count").textContent = knownBarcodeSet.size.toLocaleString("ko-KR");
+      $("queued-count").textContent = items.filter(item => item.status === "queued" || item.status === "uploading").length;
+      $("uploaded-count").textContent = items.filter(item => item.status === "uploaded").length;
+      $("failed-count").textContent = items.filter(item => item.status === "failed").length;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function bindEvents() {
+      $("start-scan-btn").addEventListener("click", startScanning);
+      $("stop-scan-btn").addEventListener("click", async () => {
+        await stopScanning();
+        isProcessingScan = false;
+        setStatus("카메라를 정지했습니다.");
+      });
+      $("load-barcodes-btn").addEventListener("click", loadKnownBarcodes);
+      $("manual-check-btn").addEventListener("click", () => {
+        inspectBarcode(manualBarcodeInput.value);
+      });
+      manualBarcodeInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") inspectBarcode(manualBarcodeInput.value);
+      });
+      $("save-key-btn").addEventListener("click", () => {
+        localStorage.setItem("collector_admin_key", getAdminKey());
+        setStatus("관리자 키를 이 브라우저에 저장했습니다.", "success");
+      });
+      $("clear-key-btn").addEventListener("click", () => {
+        localStorage.removeItem("collector_admin_key");
+        adminKeyInput.value = "";
+        setStatus("관리자 키를 삭제했습니다.");
+      });
+      $("capture-product-btn").addEventListener("click", () => $("product-photo-input").click());
+      $("capture-barcode-btn").addEventListener("click", () => $("barcode-photo-input").click());
+      $("product-photo-input").addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        capturePhoto("product", file);
+      });
+      $("barcode-photo-input").addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        event.target.value = "";
+        capturePhoto("barcode", file);
+      });
+      $("next-scan-btn").addEventListener("click", async () => {
+        currentItem = null;
+        isProcessingScan = false;
+        photoActions.classList.add("hidden");
+        photoStatus.classList.add("hidden");
+        nextActions.classList.add("hidden");
+        setResult("다음 상품을 스캔할 수 있습니다.", "", "");
+        await startScanning();
+      });
+      $("retry-current-upload-btn").addEventListener("click", uploadQueuedItems);
+      $("upload-all-btn").addEventListener("click", uploadQueuedItems);
+      $("reload-queue-btn").addEventListener("click", async () => {
+        await renderQueue();
+        await updateCounts();
+      });
+      $("clear-uploaded-btn").addEventListener("click", async () => {
+        const items = await getAllItems();
+        for (const item of items) {
+          if (item.status === "uploaded") await deleteItem(item.id);
+        }
+        await renderQueue();
+        await updateCounts();
+      });
+      window.addEventListener("online", uploadQueuedItems);
+      window.addEventListener("beforeunload", () => {
+        stopScanning();
+      });
+    }
+
+    async function init() {
+      bindEvents();
+      db = await openCollectorDb();
+
+      const params = new URLSearchParams(window.location.search);
+      const keyFromUrl = params.get("key");
+      adminKeyInput.value = keyFromUrl || localStorage.getItem("collector_admin_key") || "";
+
+      await renderQueue();
+      await updateCounts();
+      await loadKnownBarcodes();
+      uploadQueuedItems();
+    }
+
+    init().catch((error) => {
+      console.error("collector init failed", error);
+      setStatus("수집 모드를 초기화하지 못했습니다.", "error");
+    });
+  </script>
+</body>
+</html>
