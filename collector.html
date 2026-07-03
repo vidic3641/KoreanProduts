@@ -57,6 +57,37 @@
       outline: none;
     }
     input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, .14); }
+    .password-field {
+      position: relative;
+    }
+    .password-field input {
+      padding-right: 48px;
+    }
+    .icon-button {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      width: 36px;
+      min-height: 36px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(-50%);
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+    }
+    .icon-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .14);
+    }
+    .icon-button svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
 
     .app {
       width: min(1120px, 100%);
@@ -406,7 +437,15 @@
           </div>
           <div class="panel-body">
             <label class="label" for="admin-key-input">관리자 키</label>
-            <input id="admin-key-input" type="password" autocomplete="off" placeholder="관리자 키를 입력">
+            <div class="password-field">
+              <input id="admin-key-input" type="password" autocomplete="off" placeholder="관리자 키를 입력">
+              <button class="icon-button" id="toggle-admin-key-btn" type="button" aria-label="관리자 키 보기" title="관리자 키 보기">
+                <svg id="admin-key-eye-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
             <div class="toolbar">
               <button class="button-secondary" id="save-key-btn" type="button">키 저장</button>
               <button class="button-ghost" id="clear-key-btn" type="button">키 삭제</button>
@@ -475,6 +514,8 @@
     const resultTitle = $("result-title");
     const resultMeta = $("result-meta");
     const adminKeyInput = $("admin-key-input");
+    const toggleAdminKeyBtn = $("toggle-admin-key-btn");
+    const adminKeyEyeIcon = $("admin-key-eye-icon");
     const manualBarcodeInput = $("manual-barcode-input");
     const captureSlot = $("capture-slot");
     const barcodeStepChip = $("barcode-step-chip");
@@ -512,6 +553,14 @@
 
     function getAdminKey() {
       return String(adminKeyInput.value || "").trim();
+    }
+    function setAdminKeyVisibility(isVisible) {
+      adminKeyInput.type = isVisible ? "text" : "password";
+      toggleAdminKeyBtn.setAttribute("aria-label", isVisible ? "관리자 키 숨기기" : "관리자 키 보기");
+      toggleAdminKeyBtn.title = isVisible ? "관리자 키 숨기기" : "관리자 키 보기";
+      adminKeyEyeIcon.innerHTML = isVisible
+        ? '<path d="M3 3l18 18"></path><path d="M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6"></path><path d="M9.9 4.2A9.8 9.8 0 0 1 12 4c6.5 0 10 8 10 8a18.5 18.5 0 0 1-3.2 4.2"></path><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3.5 8 10 8a9.7 9.7 0 0 0 4.4-1"></path>'
+        : '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle>';
     }
 
     function updateControls() {
@@ -1168,6 +1217,9 @@
       });
       manualBarcodeInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") inspectBarcode(manualBarcodeInput.value);
+      });
+      toggleAdminKeyBtn.addEventListener("click", () => {
+        setAdminKeyVisibility(adminKeyInput.type === "password");
       });
       $("save-key-btn").addEventListener("click", () => {
         localStorage.setItem("collector_admin_key", getAdminKey());
