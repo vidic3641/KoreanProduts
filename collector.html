@@ -503,7 +503,9 @@
       uploadUrl: "/api/collector/upload",
       imageMaxSize: 1280,
       imageQuality: 0.78,
-      duplicateCooldownMs: 1600
+      duplicateCooldownMs: 1600,
+      acceptedCameraFormats: ["ean_13", "ean_8", "upc_a", "upc_e"],
+      invalidReadMessageCooldownMs: 1200
     };
 
     const $ = (id) => document.getElementById(id);
@@ -539,8 +541,8 @@
     let currentItem = null;
     let captureStep = "idle";
     let lastScan = { barcode: "", at: 0 };
+    let pendingScan = { barcode: "", count: 0, firstAt: 0 };
     let uploadInProgress = false;
-
     function setStatus(message, tone = "") {
       scanStatus.textContent = message;
       modeBadge.textContent = tone === "success" ? "정상" : tone === "error" ? "확인 필요" : tone === "warning" ? "수집 중" : "대기";
@@ -592,6 +594,41 @@
       return [...new Set(candidates)];
     }
 
+    function normalizeBarcodeFormat(format) {
+      return String(format || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    function isAcceptedCameraFormat(format) {
+      const normalized = normalizeBarcodeFormat(format);
+      return !normalized || COLLECTOR_CONFIG.acceptedCameraFormats.includes(normalized);
+    }
+
+    function hasValidGtinCheckDigit(value) {
+      const digits = String(value || "").replace(/\D/g, "");
+      if (![8, 12, 13, 14].includes(digits.length)) return false;
+
+      const expected = Number(digits[digits.length - 1]);
+      let sum = 0;
+      let weight = 3;
+
+      for (let i = digits.length - 2; i >= 0; i--) {
+        sum += Number(digits[i]) * weight;
+        weight = weight === 3 ? 1 : 3;
+      }
+
+      const actual = (10 - (sum % 10)) % 10;
+      return actual === expected;
+    }
+
+    function shouldAcceptCameraBarcode(code, format) {
+      if (!isAcceptedCameraFormat(format)) return false;
+      const normalizedFormat = normalizeBarcodeFormat(format);
+      if (normalizedFormat === "upc_e" && /^\d{8}$/.test(code)) return true;
+      return hasValidGtinCheckDigit(code);
+    }
     function isIOS() {
       return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
@@ -708,7 +745,7 @@
 
     async function startBarcodeDetectorScanning() {
       barcodeDetector = new BarcodeDetector({
-        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"]
+        formats: ["ean_13", "ean_8", "upc_a", "upc_e"]
       });
 
       const scan = async () => {
@@ -717,13 +754,13 @@
         try {
           const results = await barcodeDetector.detect(readerVideo);
           if (results && results.length) {
-            const priority = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"];
+            const priority = ["ean_13", "ean_8", "upc_a", "upc_e"];
             let selected = null;
             for (const format of priority) {
               selected = results.find(item => String(item.format).toLowerCase() === format);
               if (selected) break;
             }
-            if (selected) handleDetectedCode(selected.rawValue);
+            if (selected) handleDetectedCode(selected.rawValue, selected.format);
           }
         } catch (e) {}
 
@@ -732,7 +769,6 @@
 
       barcodeDetectorTimer = requestAnimationFrame(scan);
     }
-
     async function startZxingScanning() {
       if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
         throw new Error("ZXing is not loaded");
@@ -745,11 +781,11 @@
         (result) => {
           if (!result || isProcessingScan) return;
           const rawValue = result.getText ? result.getText() : String(result.text || "");
-          handleDetectedCode(rawValue);
+          const format = result.getBarcodeFormat ? String(result.getBarcodeFormat()) : String(result.format || "");
+          handleDetectedCode(rawValue, format);
         }
       );
     }
-
     async function startScanning() {
       if (!requireKnownBarcodeList()) return;
 
@@ -797,17 +833,26 @@
       readerVideo.srcObject = null;
     }
 
-    function handleDetectedCode(rawValue) {
+    function handleDetectedCode(rawValue, format = "") {
       const code = normalizeScannedCode(rawValue);
       if (!code) return;
 
       const now = Date.now();
       if (lastScan.barcode === code && now - lastScan.at < COLLECTOR_CONFIG.duplicateCooldownMs) return;
+
+      if (!shouldAcceptCameraBarcode(code, format)) {
+        if (pendingScan.barcode !== code || now - pendingScan.firstAt > COLLECTOR_CONFIG.invalidReadMessageCooldownMs) {
+          pendingScan = { barcode: code, count: 1, firstAt: now };
+          setStatus("상품 바코드가 정확히 잡히지 않았습니다. 숫자 부분을 선명하게 맞춰주세요.", "warning");
+        }
+        return;
+      }
+
+      pendingScan = { barcode: "", count: 0, firstAt: 0 };
       lastScan = { barcode: code, at: now };
 
       inspectBarcode(code);
     }
-
     async function inspectBarcode(code) {
       if (!requireKnownBarcodeList()) return;
 
@@ -864,6 +909,9 @@
 
         item.sheetRegistered = true;
         item.uploadResponse = data;
+        item.uploadNote = data && data.duplicate
+          ? "이미 수집대기 시트에 있는 바코드라 새 행을 만들지 않고 기존 행을 사용합니다."
+          : "수집대기 시트에 바코드 번호를 새로 기록했습니다.";
         item.uploadError = "";
         item.updatedAt = new Date().toISOString();
         await saveItem(item);
@@ -879,8 +927,7 @@
         await updateCounts();
         return false;
       }
-    }
-    function setCaptureStep(step) {
+    }    function setCaptureStep(step) {
       captureStep = step;
       const barcode = currentItem ? currentItem.barcode : "";
       const chipState = (chip, state) => {
@@ -1141,6 +1188,9 @@
 
         item.status = "uploaded";
         item.uploadResponse = data;
+        item.uploadNote = data && data.duplicate
+          ? "중복 바코드라 새 행을 추가하지 않고 기존 행의 사진 정보를 업데이트했습니다."
+          : "수집대기 시트와 구글 드라이브에 업로드했습니다.";
         item.uploadError = "";
         item.sheetRegistered = true;
         item.updatedAt = new Date().toISOString();
@@ -1165,13 +1215,14 @@
       for (const item of items) {
         const row = document.createElement("div");
         row.className = "queue-item";
-        const statusText = {
+        const isDuplicateUpdate = item.status === "uploaded" && item.uploadResponse && item.uploadResponse.duplicate;
+        const statusText = isDuplicateUpdate ? "기존 행 업데이트" : ({
           needs_photos: "사진 필요",
           queued: "대기",
           uploading: "업로드 중",
           uploaded: "완료",
           failed: "실패"
-        }[item.status] || item.status;
+        }[item.status] || item.status);
 
         row.innerHTML = `
           <div class="queue-line">
@@ -1179,11 +1230,11 @@
             <span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusText)}</span>
           </div>
           <p class="small">${formatDate(item.createdAt)} · 시트기록 ${item.sheetRegistered ? "있음" : "대기"} · 상품사진 ${item.productPhoto ? "있음" : "없음"} · 바코드사진 ${item.barcodePhoto ? "있음" : "없음"}</p>
+          ${item.uploadNote ? `<p class="small">${escapeHtml(item.uploadNote)}</p>` : ""}
           ${item.uploadError ? `<p class="small">오류: ${escapeHtml(item.uploadError)}</p>` : ""}
         `;
         queueList.appendChild(row);
-      }
-    }
+      }    }
 
     async function updateCounts() {
       const items = db ? await getAllItems() : [];
