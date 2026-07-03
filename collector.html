@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -655,11 +655,19 @@
     async function loadKnownBarcodes() {
       knownBarcodeListLoaded = false;
       updateControls();
-      setStatus("기존 바코드 목록을 불러오는 중입니다.", "warning");
 
       const url = new URL(COLLECTOR_CONFIG.barcodeListUrl, window.location.origin);
       const key = getAdminKey();
-      if (key) url.searchParams.set("key", key);
+      if (!key) {
+        knownBarcodeSet = new Set();
+        setStatus("관리자 키를 입력한 뒤 목록을 불러와 주세요.", "error");
+        setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "error");
+        await updateCounts();
+        return;
+      }
+
+      url.searchParams.set("key", key);
+      setStatus("기존 바코드 목록을 불러오는 중입니다.", "warning");
 
       try {
         const response = await fetch(url.toString(), { cache: "no-store" });
@@ -678,7 +686,7 @@
         knownBarcodeListLoaded = false;
         const detail = error && error.message ? error.message : String(error || "unknown_error");
         setStatus("기존 바코드 목록을 불러오지 못했습니다. 수집을 시작하지 않습니다.", "error");
-        setResult("목록 불러오기 실패", `오류: ${detail}`, "error");
+        setResult("목록 불러오기 실패", `오류: ${detail} · 입력된 키 길이: ${key.length}`, "error");
         console.warn("barcode list load failed", error);
       }
 
@@ -1231,7 +1239,11 @@
       $("clear-key-btn").addEventListener("click", () => {
         localStorage.removeItem("collector_admin_key");
         adminKeyInput.value = "";
+        knownBarcodeSet = new Set();
+        knownBarcodeListLoaded = false;
+        updateControls();
         setStatus("관리자 키를 삭제했습니다.");
+        setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "");
       });
       captureStepBtn.addEventListener("click", async () => {
         if (!currentItem) return;
@@ -1305,10 +1317,17 @@
       const params = new URLSearchParams(window.location.search);
       const keyFromUrl = params.get("key");
       adminKeyInput.value = keyFromUrl || localStorage.getItem("collector_admin_key") || "";
+      if (keyFromUrl) localStorage.setItem("collector_admin_key", keyFromUrl);
 
       await renderQueue();
       await updateCounts();
-      await loadKnownBarcodes();
+      if (getAdminKey()) {
+        await loadKnownBarcodes();
+      } else {
+        updateControls();
+        setStatus("관리자 키를 입력한 뒤 목록을 불러와 주세요.");
+        setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "");
+      }
       uploadQueuedItems();
     }
 
