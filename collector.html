@@ -537,6 +537,7 @@
     let knownBarcodeSet = new Set();
     let knownBarcodeListLoaded = false;
     let currentItem = null;
+    let captureStep = "idle";
     let lastScan = { barcode: "", at: 0 };
     let uploadInProgress = false;
 
@@ -675,8 +676,9 @@
       } catch (error) {
         knownBarcodeSet = new Set();
         knownBarcodeListLoaded = false;
+        const detail = error && error.message ? error.message : String(error || "unknown_error");
         setStatus("기존 바코드 목록을 불러오지 못했습니다. 수집을 시작하지 않습니다.", "error");
-        setResult("목록 불러오기 실패", "관리자 키, API 연결, Apps Script 배포 상태를 확인한 뒤 다시 불러와 주세요.", "error");
+        setResult("목록 불러오기 실패", `오류: ${detail}`, "error");
         console.warn("barcode list load failed", error);
       }
 
