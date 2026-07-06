@@ -100,9 +100,13 @@
       z-index: 10;
     }
     #reader-video { width: 100%; min-height: 220px; object-fit: cover; display: block; background: #000; }
-    .scan-status-overlay { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 20; padding: 10px 12px; border-radius: 13px; background: rgba(17, 24, 39, 0.9); color: #fff; font-size: 13px; line-height: 1.45; font-weight: 800; text-align: center; box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
-    .scan-status-overlay.error { background: rgba(185, 28, 28, 0.94); }
-    .scan-status-overlay.success { background: rgba(15, 118, 110, 0.94); }
+    .scan-status-overlay { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 20; display: grid; gap: 3px; padding: 12px 13px; border-radius: 14px; background: rgba(17, 24, 39, 0.92); color: #fff; font-size: 13px; line-height: 1.45; font-weight: 800; text-align: left; box-shadow: 0 12px 30px rgba(0,0,0,0.26); }
+    .scan-status-overlay strong { display: block; font-size: 14px; line-height: 1.35; font-weight: 900; }
+    .scan-status-overlay span { display: block; opacity: 0.93; font-size: 12px; line-height: 1.45; font-weight: 750; }
+    .scan-status-overlay.active { background: rgba(17, 24, 39, 0.92); }
+    .scan-status-overlay.warning { background: rgba(180, 83, 9, 0.95); }
+    .scan-status-overlay.error { background: rgba(185, 28, 28, 0.95); }
+    .scan-status-overlay.success { background: rgba(15, 118, 110, 0.95); }
 
     .scan-guide-box { border: 2px dashed #cfd6df; border-radius: 16px; background: #fafbfc; min-height: 150px; display: flex; align-items: center; justify-content: center; padding: 18px; text-align: center; margin-bottom: 12px; }
     .scan-guide-text { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
@@ -131,6 +135,7 @@
     .report-box { margin-top: 12px; padding: 13px; border-radius: 14px; background: #fff7ed; border: 1px solid #fed7aa; }
     .report-title { margin: 0 0 6px; font-size: 15px; line-height: 1.35; font-weight: 900; color: #9a3412; }
     .report-desc { margin: 0 0 12px; color: #7c2d12; font-size: 13px; line-height: 1.5; }
+    .report-quick-actions { display: grid; gap: 8px; }
     .report-panel { margin-top: 12px; }
     .report-field { margin-top: 10px; }
     .report-label { display: block; margin-bottom: 6px; font-size: 13px; line-height: 1.35; font-weight: 800; color: #7c2d12; }
@@ -281,7 +286,10 @@
         <div class="report-box hidden" id="missing-report-box" aria-label="Report missing product">
           <p class="report-title" id="report-title">Product not found yet</p>
           <p class="report-desc" id="report-desc">Help us add this product by sending two photos.</p>
-          <button class="secondary-btn" id="report-open-btn" type="button">Report this product</button>
+          <div class="report-quick-actions">
+            <button class="primary-btn" id="report-open-btn" type="button">Report this product</button>
+            <button class="secondary-btn" id="report-scan-again-btn" type="button">Scan another product</button>
+          </div>
           <div class="report-panel hidden" id="report-panel">
             <div class="report-field">
               <label class="report-label" for="report-product-photo" id="report-product-photo-label">Product front photo</label>
@@ -464,6 +472,9 @@
     let isProcessingScan = false;
     let pendingQrTimer = null;
     let pendingQrValue = "";
+    let pendingQrFormat = "";
+    let lastIgnoredQrValue = "";
+    let lastIgnoredQrAt = 0;
     let lastMissingBarcode = "";
     let lastCameraErrorContext = null;
     const translations = {
@@ -503,9 +514,10 @@
             error: "전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
           },
           report: {
-            title: "상품 추가를 요청하시겠어요?",
-            desc: "상품 전면 사진과 바코드 사진을 보내주시면, 다른 여행자들에게 도움이 될 수 있습니다.",
+            title: "현재 들고 계신 상품을 알려주시겠어요?",
+            desc: "상품 전면 사진과 바코드 사진을 보내주시면, 다른 한국어 사용자들이 이 상품을 확인하는 데 도움이 됩니다.",
             openBtn: "상품 추가 요청하기",
+            scanAgainBtn: "다른 상품 스캔하기",
             productPhotoLabel: "상품 전면 사진",
             barcodePhotoLabel: "바코드 사진",
             noteLabel: "추가 설명 (선택)",
@@ -540,9 +552,20 @@
         cameraBtn: "카메라 열기",
         loading: "조회 중...",
         cameraLoading: "카메라 준비 중...",
-        scanCameraActive: "카메라가 켜졌습니다. 바코드를 안내선 안에 맞춰주세요.",
-        scanNoReadYet: "아직 바코드를 인식하지 못했습니다. 안내선 안에 맞추거나 번호를 직접 입력해 주세요.",
-        scanDetected: "바코드를 읽었습니다. 상품 정보를 찾는 중입니다.",
+        scanCameraActive: "바코드를 찾는 중입니다.",
+        scanSearchingTitle: "바코드를 찾는 중입니다.",
+        scanSearchingBody: "바코드가 안내선 안에 크게 보이도록 맞춰주세요.",
+        scanNoReadYet: "아직 바코드를 읽지 못했습니다.",
+        scanNoReadTitle: "아직 바코드를 읽지 못했습니다.",
+        scanNoReadBody: "빛 반사, 초점, 가까운 QR코드 때문에 인식이 어려울 수 있습니다. 바코드만 보이게 하거나 번호를 직접 입력해 주세요.",
+        scanDetected: "바코드를 읽었습니다.",
+        scanDetectedTitle: "바코드를 읽었습니다.",
+        scanDetectedBody: "상품 정보를 찾는 중입니다.",
+        scanNotFoundBody: "바코드는 읽혔지만 등록된 상품정보가 없습니다. 아래 상품 추가 요청을 확인해 주세요.",
+        scanQrDetectedTitle: "QR코드가 인식되었습니다.",
+        scanQrDetectedBody: "상품 확인용 숫자 코드라면 조회를 시도합니다. 상품 바코드를 스캔하려면 QR코드를 가리고 바코드만 보이게 해주세요.",
+        scanQrIgnoredTitle: "QR코드가 인식되었지만 상품 코드로 보이지 않습니다.",
+        scanQrIgnoredBody: "상품 바코드를 스캔하려면 QR코드를 가리고 바코드만 보이게 해주세요.",
         alertDbMissing: "아직 등록되지 않은 상품입니다.",
         alertScanMismatch: "바코드는 인식되었지만 상품정보를 찾지 못했습니다.",
         alertCameraError: "카메라를 바로 사용할 수 없어요. 바코드 번호를 직접 입력해 검색해 주세요.",
@@ -613,9 +636,10 @@
             error: "Failed to send. Please try again later."
           },
           report: {
-            title: "Would you like to request adding this product?",
-            desc: "Send a product front photo and barcode photo. It may help other travelers.",
+            title: "Would you like to help add the product you are holding?",
+            desc: "If you send a front photo of the product and a barcode photo, other English-speaking users can check this product more easily later.",
             openBtn: "Request product addition",
+            scanAgainBtn: "Scan another product",
             productPhotoLabel: "Product front photo",
             barcodePhotoLabel: "Barcode photo",
             noteLabel: "Additional note (optional)",
@@ -650,9 +674,20 @@
         cameraBtn: "Open Camera",
         loading: "Searching...",
         cameraLoading: "Starting camera...",
-        scanCameraActive: "Camera is on. Place the barcode inside the guide box.",
-        scanNoReadYet: "The barcode has not been detected yet. Align it inside the guide box or enter the number manually.",
-        scanDetected: "Barcode detected. Searching for product information.",
+        scanCameraActive: "Looking for a barcode.",
+        scanSearchingTitle: "Looking for a barcode.",
+        scanSearchingBody: "Place the barcode clearly inside the guide box.",
+        scanNoReadYet: "The barcode has not been read yet.",
+        scanNoReadTitle: "The barcode has not been read yet.",
+        scanNoReadBody: "Glare, focus, or a nearby QR code may make scanning difficult. Show only the barcode or enter the number manually.",
+        scanDetected: "Barcode detected.",
+        scanDetectedTitle: "Barcode detected.",
+        scanDetectedBody: "Searching for product information.",
+        scanNotFoundBody: "The barcode was read, but this product is not registered yet. Please check the product addition request below.",
+        scanQrDetectedTitle: "QR code detected.",
+        scanQrDetectedBody: "If this is a numeric product code, we will try to search it. To scan the product barcode, cover the QR code and show only the barcode.",
+        scanQrIgnoredTitle: "QR code detected, but it does not look like a product code.",
+        scanQrIgnoredBody: "Cover the QR code and show only the product barcode, or enter the barcode number manually.",
         alertDbMissing: "This product is not registered yet.",
         alertScanMismatch: "Barcode detected, but product information could not be matched.",
         alertCameraError: "Camera is not available right now. Please enter the barcode number manually.",
@@ -723,9 +758,10 @@
             error: "送信に失敗しました。しばらくしてからもう一度お試しください。"
           },
           report: {
-            title: "商品追加をリクエストしますか？",
-            desc: "商品の正面写真とバーコード写真を送っていただくと、他の旅行者の役に立つ可能性があります。",
+            title: "今お持ちの商品を教えていただけますか？",
+            desc: "商品の正面写真とバーコード写真を送っていただけると、他の日本人旅行者がこの商品を確認する助けになります。",
             openBtn: "商品追加をリクエストする",
+            scanAgainBtn: "別の商品をスキャンする",
             productPhotoLabel: "商品の正面写真",
             barcodePhotoLabel: "バーコード写真",
             noteLabel: "追加説明（任意）",
@@ -760,9 +796,20 @@
         cameraBtn: "カメラ起動",
         loading: "検索中...",
         cameraLoading: "カメラ準備中...",
-        scanCameraActive: "カメラが起動しました。バーコードを枠内に合わせてください。",
-        scanNoReadYet: "まだバーコードを認識できていません。枠内に合わせるか、番号を直接入力してください。",
-        scanDetected: "バーコードを認識しました。商品情報を検索しています。",
+        scanCameraActive: "バーコードを探しています。",
+        scanSearchingTitle: "バーコードを探しています。",
+        scanSearchingBody: "バーコードが枠内に大きく見えるように合わせてください。",
+        scanNoReadYet: "まだバーコードを読み取れていません。",
+        scanNoReadTitle: "まだバーコードを読み取れていません。",
+        scanNoReadBody: "光の反射、ピント、近くのQRコードがあると認識しにくい場合があります。バーコードだけが見えるようにするか、番号を直接入力してください。",
+        scanDetected: "バーコードを読み取りました。",
+        scanDetectedTitle: "バーコードを読み取りました。",
+        scanDetectedBody: "商品情報を検索しています。",
+        scanNotFoundBody: "バーコードは読み取れましたが、登録済みの商品情報がありません。下の商品追加リクエストをご確認ください。",
+        scanQrDetectedTitle: "QRコードが認識されました。",
+        scanQrDetectedBody: "商品確認用の数字コードであれば検索を試します。商品バーコードを読み取る場合は、QRコードを隠してバーコードだけが見えるようにしてください。",
+        scanQrIgnoredTitle: "QRコードは認識されましたが、商品コードではない可能性があります。",
+        scanQrIgnoredBody: "商品バーコードを読み取るには、QRコードを隠してバーコードだけが見えるようにしてください。",
         alertDbMissing: "まだ登録されていない商品です。",
         alertScanMismatch: "バーコードは認識されましたが、商品情報と一致しませんでした。",
         alertCameraError: "現在カメラを使用できません。バーコード番号を直接入力してください。",
@@ -833,9 +880,10 @@
             error: "发送失败。请稍后再试。"
           },
           report: {
-            title: "要请求添加该商品吗？",
-            desc: "请发送商品正面照片和条形码照片，这可能会帮助其他旅行者。",
+            title: "可以告诉我们您现在拿着的商品吗？",
+            desc: "如果您发送商品正面照片和条形码照片，其他中文用户之后查看这个商品时会得到帮助。",
             openBtn: "请求添加商品",
+            scanAgainBtn: "扫描其他商品",
             productPhotoLabel: "商品正面照片",
             barcodePhotoLabel: "条形码照片",
             noteLabel: "补充说明（可选）",
@@ -870,9 +918,20 @@
         cameraBtn: "开启摄像头",
         loading: "查询中...",
         cameraLoading: "准备摄像头...",
-        scanCameraActive: "摄像头已开启。请将条形码对准取景框。",
-        scanNoReadYet: "尚未识别到条形码。请对准取景框，或手动输入号码。",
-        scanDetected: "已识别条形码。正在查询商品信息。",
+        scanCameraActive: "正在查找条形码。",
+        scanSearchingTitle: "正在查找条形码。",
+        scanSearchingBody: "请让条形码清楚地出现在取景框内。",
+        scanNoReadYet: "尚未读取到条形码。",
+        scanNoReadTitle: "尚未读取到条形码。",
+        scanNoReadBody: "反光、对焦不清或附近有二维码时，可能难以识别。请只露出条形码，或手动输入号码。",
+        scanDetected: "已读取条形码。",
+        scanDetectedTitle: "已读取条形码。",
+        scanDetectedBody: "正在查询商品信息。",
+        scanNotFoundBody: "条形码已读取，但该商品尚未注册。请查看下方的商品添加请求。",
+        scanQrDetectedTitle: "已识别二维码。",
+        scanQrDetectedBody: "如果这是商品确认用的数字代码，我们会尝试查询。若要扫描商品条形码，请遮住二维码，只让条形码可见。",
+        scanQrIgnoredTitle: "已识别二维码，但看起来不像商品代码。",
+        scanQrIgnoredBody: "若要扫描商品条形码，请遮住二维码，只让条形码可见，或手动输入条形码号码。",
         alertDbMissing: "该商品尚未注册。",
         alertScanMismatch: "条码已识别，但未能匹配到商品信息。",
         alertCameraError: "现在无法使用摄像头。请手动输入条形码号码。",
@@ -943,9 +1002,10 @@
             error: "傳送失敗。請稍後再試。"
           },
           report: {
-            title: "要請求新增此商品嗎？",
-            desc: "請傳送商品正面照片和條碼照片，這可能會幫助其他旅行者。",
+            title: "可以告訴我們您現在拿著的商品嗎？",
+            desc: "如果您傳送商品正面照片和條碼照片，其他中文使用者之後查看這個商品時會得到幫助。",
             openBtn: "請求新增商品",
+            scanAgainBtn: "掃描其他商品",
             productPhotoLabel: "商品正面照片",
             barcodePhotoLabel: "條碼照片",
             noteLabel: "補充說明（選填）",
@@ -980,9 +1040,20 @@
         cameraBtn: "開啟攝像頭",
         loading: "查詢中...",
         cameraLoading: "準備攝像頭...",
-        scanCameraActive: "攝像頭已開啟。請將條碼對準取景框。",
-        scanNoReadYet: "尚未辨識到條碼。請對準取景框，或手動輸入號碼。",
-        scanDetected: "已辨識條碼。正在查詢商品資訊。",
+        scanCameraActive: "正在尋找條碼。",
+        scanSearchingTitle: "正在尋找條碼。",
+        scanSearchingBody: "請讓條碼清楚地出現在取景框內。",
+        scanNoReadYet: "尚未讀取到條碼。",
+        scanNoReadTitle: "尚未讀取到條碼。",
+        scanNoReadBody: "反光、對焦不清或附近有QR碼時，可能難以辨識。請只露出條碼，或手動輸入號碼。",
+        scanDetected: "已讀取條碼。",
+        scanDetectedTitle: "已讀取條碼。",
+        scanDetectedBody: "正在查詢商品資訊。",
+        scanNotFoundBody: "條碼已讀取，但此商品尚未註冊。請查看下方的商品新增請求。",
+        scanQrDetectedTitle: "已辨識QR碼。",
+        scanQrDetectedBody: "如果這是商品確認用的數字代碼，我們會嘗試查詢。若要掃描商品條碼，請遮住QR碼，只讓條碼可見。",
+        scanQrIgnoredTitle: "已辨識QR碼，但看起來不像商品代碼。",
+        scanQrIgnoredBody: "若要掃描商品條碼，請遮住QR碼，只讓條碼可見，或手動輸入條碼號碼。",
         alertDbMissing: "此商品尚未註冊。",
         alertScanMismatch: "條碼已辨識，但無法匹配商品資訊。",
         alertCameraError: "目前無法使用攝像頭。請手動輸入條碼號碼。",
@@ -1125,13 +1196,33 @@
       return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).feedback || translations.en.home.feedback;
     }
 
-    function setScanStatusOverlay(message = "", type = "") {
-      scanStatusOverlay.textContent = message;
-      scanStatusOverlay.className = "scan-status-overlay";
-      if (type) scanStatusOverlay.classList.add(type);
-      scanStatusOverlay.classList.toggle("hidden", !message);
-    }
+    function setScanStatusOverlay(title = "", body = "", type = "") {
+      if (body && !type && ["active", "warning", "error", "success"].includes(body)) {
+        type = body;
+        body = "";
+      }
 
+      scanStatusOverlay.className = "scan-status-overlay";
+      scanStatusOverlay.innerHTML = "";
+
+      if (!title) {
+        scanStatusOverlay.classList.add("hidden");
+        return;
+      }
+
+      const titleElement = document.createElement("strong");
+      titleElement.textContent = title;
+      scanStatusOverlay.appendChild(titleElement);
+
+      if (body) {
+        const bodyElement = document.createElement("span");
+        bodyElement.textContent = body;
+        scanStatusOverlay.appendChild(bodyElement);
+      }
+
+      if (type) scanStatusOverlay.classList.add(type);
+      scanStatusOverlay.classList.remove("hidden");
+    }
     function clearScanNoReadTimer() {
       if (scanNoReadTimer) {
         clearTimeout(scanNoReadTimer);
@@ -1142,15 +1233,20 @@
     function startScanNoReadTimer() {
       clearScanNoReadTimer();
       scanNoReadTimer = setTimeout(() => {
-        if (!isProcessingScan && readerVideo.srcObject) {
+        if (!isProcessingScan && readerElement.style.display === "block") {
           const text = t();
-          setScanStatusOverlay(text.scanNoReadYet || text.scanGuide);
+          setScanStatusOverlay(
+            text.scanNoReadTitle || text.scanNoReadYet || text.scanGuide,
+            text.scanNoReadBody || "",
+            "warning"
+          );
           trackEvent("barcode_scan_no_read_hint_shown", {
             lang: getCurrentLang()
           });
         }
-      }, 7000);
+      }, 4500);
     }
+
     function getReportText() {
       return ((translations[getCurrentLang()] || translations.en).home || translations.en.home).report || translations.en.home.report;
     }
@@ -1161,6 +1257,7 @@
       document.getElementById("report-title").textContent = report.title;
       document.getElementById("report-desc").textContent = report.desc;
       document.getElementById("report-open-btn").textContent = report.openBtn;
+      document.getElementById("report-scan-again-btn").textContent = report.scanAgainBtn || t().newScanBtn;
       document.getElementById("report-product-photo-label").textContent = report.productPhotoLabel;
       document.getElementById("report-barcode-photo-label").textContent = report.barcodePhotoLabel;
       document.getElementById("report-note-label").textContent = report.noteLabel;
@@ -1190,9 +1287,17 @@
 
     function showMissingReport(barcode) {
       lastMissingBarcode = String(barcode || "").trim();
-      document.getElementById("missing-report-box").classList.remove("hidden");
+      const reportBox = document.getElementById("missing-report-box");
+      reportBox.classList.remove("hidden");
       document.getElementById("report-panel").classList.add("hidden");
       document.getElementById("report-status").classList.add("hidden");
+      requestAnimationFrame(() => {
+        try {
+          reportBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } catch (e) {
+          reportBox.scrollIntoView();
+        }
+      });
     }
 
     function loadImageFromFile(file) {
@@ -1502,15 +1607,30 @@
       return [...new Set(candidates)];
     }
 
+    function isUrlLikeCode(value) {
+      const text = String(value || "").trim();
+      return /^https?:\/\//i.test(text) || /^www\./i.test(text) || text.includes("://");
+    }
+
     function isQrScan(rawValue, format) {
       const f = String(format || "").toLowerCase();
       const value = String(rawValue || "").trim();
 
-      return (
-        f.includes("qr") ||
-        /^https?:\/\//i.test(value) ||
-        value.includes("://")
-      );
+      return f.includes("qr") || isUrlLikeCode(value);
+    }
+
+    function getQrProductCode(rawValue) {
+      const value = String(rawValue || "").trim();
+      if (!value || isUrlLikeCode(value)) return "";
+      return /^\d{5,8}$/.test(value) ? value : "";
+    }
+
+    function getQrIgnoreReason(rawValue) {
+      const value = String(rawValue || "").trim();
+      if (!value) return "empty";
+      if (isUrlLikeCode(value)) return "url";
+      if (/^\d+$/.test(value)) return "numeric_length";
+      return "non_numeric";
     }
 
     function clearPendingQr() {
@@ -1519,24 +1639,74 @@
         pendingQrTimer = null;
       }
       pendingQrValue = "";
+      pendingQrFormat = "";
     }
 
-    function processScannedValue(rawValue) {
+    function processScannedValue(rawValue, options = {}) {
       if (isProcessingScan) return;
 
-      const code = normalizeScannedCode(rawValue);
+      const code = options.code || normalizeScannedCode(rawValue);
       if (!code) return;
 
       isProcessingScan = true;
       barcodeInput.value = code;
       clearScanNoReadTimer();
-      setScanStatusOverlay(t().scanDetected || t().loading, "success");
+      const scanText = t();
+      setScanStatusOverlay(
+        options.overlayTitle || scanText.scanDetectedTitle || scanText.scanDetected || scanText.loading,
+        options.overlayBody || scanText.scanDetectedBody || scanText.loading,
+        "success"
+      );
 
       trackEvent("barcode_scanned", {
-        barcode: code
+        barcode: code,
+        scan_format: options.format || "",
+        scan_kind: options.scanKind || "barcode"
       });
 
       searchProductByBarcode(true);
+    }
+
+    function processQrValue(rawValue, format = "") {
+      if (isProcessingScan) return;
+
+      const text = t();
+      const qrCode = getQrProductCode(rawValue);
+
+      if (qrCode) {
+        processScannedValue(qrCode, {
+          code: qrCode,
+          format,
+          scanKind: "qr_numeric",
+          overlayTitle: text.scanQrDetectedTitle || text.scanDetectedTitle || text.scanDetected || text.loading,
+          overlayBody: text.scanQrDetectedBody || text.scanDetectedBody || text.loading
+        });
+        return;
+      }
+
+      const value = String(rawValue || "").trim();
+      const now = Date.now();
+      const shouldNotify = value !== lastIgnoredQrValue || now - lastIgnoredQrAt > 3000;
+
+      if (shouldNotify) {
+        setScanStatusOverlay(
+          text.scanQrIgnoredTitle || text.scanNoReadTitle || text.scanNoReadYet || text.scanGuide,
+          text.scanQrIgnoredBody || text.scanNoReadBody || "",
+          "warning"
+        );
+
+        trackEvent("qr_scan_ignored", {
+          format: String(format || ""),
+          value_length: value.length,
+          reason: getQrIgnoreReason(value),
+          lang: getCurrentLang()
+        });
+
+        lastIgnoredQrValue = value;
+        lastIgnoredQrAt = now;
+      }
+
+      startScanNoReadTimer();
     }
 
     function handleDetectedCode(rawValue, format = "") {
@@ -1544,12 +1714,14 @@
 
       if (isQrScan(rawValue, format)) {
         pendingQrValue = rawValue;
+        pendingQrFormat = format;
 
         if (!pendingQrTimer) {
           pendingQrTimer = setTimeout(() => {
             const value = pendingQrValue;
+            const detectedFormat = pendingQrFormat;
             clearPendingQr();
-            processScannedValue(value);
+            processQrValue(value, detectedFormat);
           }, 500);
         }
 
@@ -1557,7 +1729,12 @@
       }
 
       clearPendingQr();
-      processScannedValue(rawValue);
+      lastIgnoredQrValue = "";
+      lastIgnoredQrAt = 0;
+      processScannedValue(rawValue, {
+        format,
+        scanKind: "barcode"
+      });
     }
 
     function resetScanState() {
@@ -1569,6 +1746,8 @@
       setShareStatus();
       hideMissingReport();
       clearPendingQr();
+      lastIgnoredQrValue = "";
+      lastIgnoredQrAt = 0;
       isProcessingScan = false;
     }
 
@@ -1687,7 +1866,9 @@
         });
 
         statusMessage.textContent = text.alertDbMissing;
-        setScanStatusOverlay(text.alertDbMissing, "error");
+        setScanStatusOverlay(text.alertDbMissing, text.scanNotFoundBody || "", "error");
+        await stopScanning();
+        scanPlaceholder.classList.add("hidden");
 
         statusMessage.classList.remove("hidden");
         statusMessage.classList.add("error");
@@ -1805,6 +1986,8 @@
       setScanStatusOverlay(text.cameraLoading);
       isProcessingScan = false;
       clearPendingQr();
+      lastIgnoredQrValue = "";
+      lastIgnoredQrAt = 0;
       
       const canUseBarcodeDetector = "BarcodeDetector" in window && !isIOS();
 
@@ -1833,7 +2016,7 @@
 
         lastCameraErrorContext = null;
         statusMessage.classList.add("hidden");
-        setScanStatusOverlay(text.scanCameraActive || text.scanGuide);
+        setScanStatusOverlay(text.scanSearchingTitle || text.scanCameraActive || text.scanGuide, text.scanSearchingBody || "", "active");
         startScanNoReadTimer();
 
       } catch (err) {
@@ -1881,6 +2064,8 @@
 
     async function stopScanning() {
       clearPendingQr();
+      lastIgnoredQrValue = "";
+      lastIgnoredQrAt = 0;
       clearScanNoReadTimer();
       setScanStatusOverlay();
 
@@ -2134,6 +2319,17 @@
         sendButton.disabled = false;
         sendButton.textContent = feedbackText.sendBtn;
       }
+    });
+
+    document.getElementById("report-scan-again-btn").addEventListener("click", async () => {
+      trackEvent("missing_product_scan_another_clicked", {
+        barcode: lastMissingBarcode || barcodeInput.value.trim()
+      });
+      clearProductUrl();
+      resetScanState();
+      hideMissingReport();
+      showScreen(scanScreen);
+      await startScanning();
     });
 
     document.getElementById("report-open-btn").addEventListener("click", () => {
