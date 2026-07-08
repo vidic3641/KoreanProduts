@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>韓国コスメを買う前に日本語で確認 | Korean Products Guide</title>
-  <meta name="description" content="韓国コスメの使い方と注意点を、購入前に日本語で確認。バーコードスキャンで商品の要約、使い方、注意点を確認できます。">
-  <meta property="og:title" content="韓国コスメを買う前に、使い方と注意点を日本語で確認。">
-  <meta property="og:description" content="バーコードで商品情報、使い方、注意点を日本語で確認。未登録の商品も追加リクエストできます。">
+  <title>韓国コスメを買う前にバーコードで確認 | Korean Products Guide</title>
+  <meta name="description" content="韓国コスメの使い方、注意点、成分確認ポイントを、購入前に日本語で確認。アプリ不要でバーコードからすぐ使えます。">
+  <meta property="og:title" content="韓国コスメを買う前に、バーコードで確認。">
+  <meta property="og:description" content="韓国語の説明が読みにくい商品も、使い方と注意点を日本語で確認できます。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/landing-ja-hero.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -85,10 +85,10 @@
       z-index: -1;
       background: linear-gradient(180deg, rgba(250,252,249,0.97) 0%, rgba(250,252,249,0.8) 44%, rgba(238,242,237,0.92) 100%);
     }
-    .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .brand { font-size: 13px; font-weight: 900; }
-    .free-label { padding: 6px 9px; border: 1px solid rgba(18,21,18,.14); border-radius: 999px; background: rgba(255,255,255,.78); font-size: 13px; font-weight: 900; }
-    .hero-copy { margin-top: 28px; }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .brand { flex: 1 1 auto; min-width: 0; font-size: clamp(19px, 5.2vw, 27px); line-height: 1.03; font-weight: 900; }
+    .free-label { flex: 0 0 auto; padding: 8px 11px; border: 1px solid rgba(18,21,18,.14); border-radius: 999px; background: rgba(255,255,255,.78); font-size: clamp(14px, 3.6vw, 18px); line-height: 1.15; font-weight: 900; white-space: nowrap; }
+    .hero-copy { margin-top: 24px; }
     .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 13px; font-weight: 900; }
     h1 { margin: 0; font-size: 31px; line-height: 1.2; font-weight: 900; letter-spacing: 0; word-break: keep-all; }
     .hero-description { margin: 12px 0 0; color: #303630; font-size: 14px; line-height: 1.65; font-weight: 700; word-break: keep-all; }
@@ -166,7 +166,7 @@
     .trust-row { display: flex; justify-content: center; gap: 12px; margin-top: 10px; color: #364039; font-size: 13px; font-weight: 800; }
     .trust-row span::before { content: "✓"; margin-right: 3px; color: var(--green); }
     .hero-note { margin: 10px 0 0; padding: 11px 12px; border: 1px solid rgba(23,107,82,.2); border-radius: 8px; background: rgba(229,242,235,.82); color: #26342b; font-size: 13px; line-height: 1.6; font-weight: 800; text-align: center; }
-    .hero-store-note { margin: 13px 0 0; color: var(--green-dark); font-size: 16px; line-height: 1.5; font-weight: 900; word-break: keep-all; }
+    .hero-store-note { margin: 13px 0 0; color: var(--green-dark); font-size: clamp(21px, 5.8vw, 30px); line-height: 1.22; font-weight: 900; word-break: keep-all; }
 
     .section { padding: 38px 16px; border-top: 1px solid var(--line); }
     .hero + main .section:first-child { padding-top: 24px; }
@@ -205,6 +205,7 @@
     .result-phone { position: relative; width: 254px; height: 550px; padding: 9px; border-radius: 32px; background: #080a08; box-shadow: 0 22px 46px rgba(0,0,0,.35); }
     .result-phone::before { content: ""; position: absolute; z-index: 2; top: 14px; left: 50%; width: 72px; height: 17px; border-radius: 999px; background: #080a08; transform: translateX(-50%); }
     .result-screen { height: 100%; padding: 32px 12px 16px; border-radius: 23px; background: #f4f6f4; overflow: hidden; color: var(--text); }
+    .sample-badge { position: absolute; z-index: 4; top: 38px; left: 50%; transform: translateX(-50%); padding: 5px 10px; border-radius: 999px; background: #db654a; color: #fff; font-size: 13px; line-height: 1; font-weight: 900; box-shadow: 0 8px 16px rgba(0,0,0,.18); white-space: nowrap; }
     .screen-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 900; }
     .screen-lang { color: #1f5fce; }
     .result-head { padding: 13px; border: 1px solid #e0e4e0; border-radius: 8px; background: #fff; }
@@ -252,6 +253,7 @@
       .brand-row { grid-column: 1 / -1; }
       .hero-copy { margin-top: 10px; }
       h1 { font-size: 42px; }
+      .hero-store-note { font-size: 30px; }
       .scan-scene { grid-column: 2; grid-row: 2 / 4; width: 390px; }
       .hero-actions { grid-column: 1; width: 390px; }
       .category-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
@@ -272,9 +274,9 @@
       </div>
 
       <div class="hero-copy">
-        <p class="eyebrow">韓国旅行中のコスメ選びを、もっと安心に。</p>
-        <h1>韓国コスメを買う前に、<br>使い方と注意点を<br>日本語で確認。</h1>
-        <p class="hero-description">SNSで見た人気商品でも、使い方や注意点を知らずに買うと、あとで迷うことがあります。購入前にバーコードで確認できます。</p>
+        <p class="eyebrow">韓国旅行中のコスメ選びに</p>
+        <h1>韓国コスメを買う前に、<br>バーコードで確認。</h1>
+        <p class="hero-description">韓国語の説明が読みにくい商品も、使い方・注意点・成分確認ポイントを日本語でチェックできます。</p>
         <p class="hero-store-note">店頭にいるなら、今すぐ商品を確認できます。</p>
       </div>
 
@@ -297,9 +299,9 @@
       </div>
 
       <div class="hero-actions">
-        <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="hero-scan"><i data-lucide="scan-line"></i>バーコードで試す</a>
+        <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="hero-scan"><i data-lucide="scan-line"></i>バーコードでテストする</a>
         <div class="trust-row"><span>無料</span><span>登録不要</span><span>アプリ不要</span></div>
-        <p class="hero-note">未登録の商品も、バーコードと商品写真を送るとできるだけ早く情報を追加します。</p>
+        <p class="hero-note">未登録商品の場合、バーコードと商品写真を送っていただくと、後日情報を確認できるようになります。</p>
       </div>
     </div>
   </header>
@@ -308,8 +310,8 @@
     <section class="section section-white">
       <div class="container">
         <p class="section-kicker reason-kicker">先に確認する理由</p>
-        <h2>人気だけで選ぶと、使い方で迷うことがあります。</h2>
-        <p class="section-lead">韓国コスメは、商品によって使う順番・頻度・注意点が異なります。</p>
+        <h2>人気だけで選ぶと、買ったあとに迷うことがあります。</h2>
+        <p class="section-lead">旅行中の買い物は判断が速くなりがちです。購入前に「自分に使えるか」を短時間で確認できます。</p>
         <div class="category-grid">
           <article class="category-item"><div class="category-icon"><i data-lucide="sparkles"></i></div><strong>レチノール</strong><span>毎日使う前に、頻度と併用を確認</span></article>
           <article class="category-item"><div class="category-icon"><i data-lucide="circle-dot"></i></div><strong>トナーパッド</strong><span>拭き取り方と使用頻度を確認</span></article>
@@ -321,26 +323,27 @@
 
     <section class="section section-dark">
       <div class="container">
-        <p class="section-kicker">スキャン結果</p>
-        <h2>バーコードを読み取ると、こんな情報が表示されます。</h2>
+        <p class="section-kicker">バーコードでわかること</p>
+        <h2>商品情報を、日本語で短く確認できます。</h2>
         <div class="result-layout">
           <div class="result-phone-wrap">
             <div class="result-phone" aria-label="日本語の商品情報結果画面の例">
+              <div class="sample-badge">例示画面</div>
               <div class="result-screen">
-                <div class="screen-top"><span>商品詳細</span><span class="screen-lang">Language</span></div>
+                <div class="screen-top"><span>商品情報</span><span class="screen-lang">日本語</span></div>
                 <div class="result-head">
-                  <p class="result-brand">サンプル商品</p>
-                  <div class="result-name">リードルショット 100</div>
-                  <span class="result-chip">導入美容液</span>
-                  <p class="result-summary">使用前に刺激感と使う順番を確認したいスキンケア商品です。</p>
+                  <p class="result-brand">例示商品</p>
+                  <div class="result-name">モイスチャー サンスクリーン</div>
+                  <span class="result-chip">日焼け止め</span>
+                  <p class="result-summary">毎日使いやすい保湿タイプの日焼け止め。購入前に使用量と塗り直しを確認しましょう。</p>
                 </div>
-                <div class="result-section"><strong>使い方</strong><p>洗顔後、化粧水の前に少量を肌になじませます。</p></div>
-                <div class="result-section"><strong>注意点</strong><p>初めて使う場合は少量から。目元や傷のある部分は避けてください。</p></div>
-                <div class="result-section"><strong>成分確認ポイント</strong><p>購入・使用前に実際の商品ラベルも確認してください。</p></div>
+                <div class="result-section"><strong>使い方</strong><p>スキンケアの最後に適量を塗り、外出中は必要に応じて塗り直します。</p></div>
+                <div class="result-section"><strong>注意点</strong><p>目に入らないよう注意し、肌に異常がある場合は使用を控えてください。</p></div>
+                <div class="result-section"><strong>成分確認ポイント</strong><p>香料、アルコール、紫外線防止成分など、自分が気になる項目を確認します。</p></div>
               </div>
             </div>
           </div>
-          <p class="result-caption">画面イメージです。実際のサービスでは、登録された商品ごとに商品の要約、使い方、注意点、成分確認ポイントなどを日本語で表示します。未登録の商品でも、バーコードと商品写真を送るとできるだけ早く情報を追加します。</p>
+          <p class="result-caption">これは例示画面です。実際のサービスでは、登録された商品ごとに商品の要約、使い方、注意点、成分確認ポイントなどを日本語で表示します。未登録商品の場合、バーコードと商品写真を送っていただくと、後日情報を確認できるようになります。</p>
         </div>
       </div>
     </section>
@@ -348,20 +351,20 @@
     <section class="section section-white">
       <div class="container">
         <p class="section-kicker">使い方</p>
-        <h2>使い方は、たった3ステップ。</h2>
+        <h2>アプリを入れずに、その場で使えます。</h2>
         <div class="steps">
-          <article class="step"><div class="step-icon"><i data-lucide="scan-barcode"></i></div><div><h3 class="step-title">商品のバーコードをスキャン</h3><p class="step-text">カメラで読み取るか、バーコード番号を入力します。</p></div></article>
-          <article class="step"><div class="step-icon"><i data-lucide="languages"></i></div><div><h3 class="step-title">日本語で使い方を確認</h3><p class="step-text">商品の特徴や使用順序を、その場で確認します。</p></div></article>
-          <article class="step"><div class="step-icon"><i data-lucide="shield-check"></i></div><div><h3 class="step-title">注意点を見てから購入</h3><p class="step-text">自分に合うか考えてから、購入を決められます。</p></div></article>
+          <article class="step"><div class="step-icon"><i data-lucide="scan-barcode"></i></div><div><h3 class="step-title">バーコードをスキャン</h3><p class="step-text">商品のバーコードをカメラで読み取るか、数字を入力します。</p></div></article>
+          <article class="step"><div class="step-icon"><i data-lucide="languages"></i></div><div><h3 class="step-title">日本語で内容を確認</h3><p class="step-text">商品の要約、使い方、注意点を短く確認します。</p></div></article>
+          <article class="step"><div class="step-icon"><i data-lucide="shield-check"></i></div><div><h3 class="step-title">購入前に判断</h3><p class="step-text">自分に合いそうかを確認してから購入できます。</p></div></article>
         </div>
-        <div style="margin-top:18px;"><a class="cta cta-secondary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="steps-scan"><i data-lucide="scan-line"></i>バーコードスキャンを試す</a></div>
+        <div style="margin-top:18px;"><a class="cta cta-secondary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="steps-scan"><i data-lucide="scan-line"></i>バーコードでテストする</a></div>
       </div>
     </section>
 
     <section class="section section-white">
       <div class="container">
 
-        <p class="service-note">無料・会員登録不要・アプリ不要。<br>スマートフォンのブラウザから利用できます。</p>
+        <p class="service-note">無料・会員登録不要・アプリ不要。<br>スマートフォンのブラウザからすぐ使えます。</p>
 
         <div class="notice">商品情報は収集データ、公開情報、AIによる要約をもとに提供しています。購入または使用前に、実際の商品ラベルもご確認ください。</div>
       </div>
@@ -375,20 +378,42 @@
   </footer>
 
   <div class="sticky-scan" id="sticky-scan">
-    <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="sticky-scan"><i data-lucide="scan-line"></i>バーコードで試す</a>
+    <a class="cta cta-primary js-scan-link" href="https://korean-products-guide.vercel.app/?lang=ja" data-position="sticky-scan"><i data-lucide="scan-line"></i>バーコードでテストする</a>
   </div>
 
   <script>
     const SCANNER_BASE_URL = "https://korean-products-guide.vercel.app/";
+    const LANDING_VARIANT = "current_style_conversion_ja";
     const passthroughKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"];
+    const landingParams = new URLSearchParams(window.location.search);
+
+    function createScanFlowId() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+      return "flow-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+    }
+
+    function readStoredFlowId() {
+      try { return window.sessionStorage.getItem("kpg_scan_flow_id"); } catch (_) { return ""; }
+    }
+
+    function writeStoredFlowId(value) {
+      try { window.sessionStorage.setItem("kpg_scan_flow_id", value); } catch (_) {}
+    }
+
+    const scanFlowId = landingParams.get("scan_flow_id") || readStoredFlowId() || createScanFlowId();
+    writeStoredFlowId(scanFlowId);
 
     function capture(eventName, properties = {}) {
       if (!window.posthog || typeof window.posthog.capture !== "function") return;
-      window.posthog.capture(eventName, { language: "ja", ...properties });
+      window.posthog.capture(eventName, {
+        language: "ja",
+        variant: LANDING_VARIANT,
+        scan_flow_id: scanFlowId,
+        ...properties
+      });
     }
 
-    function buildScannerUrl() {
-      const landingParams = new URLSearchParams(window.location.search);
+    function buildScannerUrl(position = "unknown") {
       const scannerUrl = new URL(SCANNER_BASE_URL);
       scannerUrl.searchParams.set("lang", "ja");
       passthroughKeys.forEach(key => {
@@ -396,15 +421,17 @@
         if (value) scannerUrl.searchParams.set(key, value);
       });
       scannerUrl.searchParams.set("entry", "landing-ja");
+      scannerUrl.searchParams.set("cta", position);
+      scannerUrl.searchParams.set("scan_flow_id", scanFlowId);
       return scannerUrl.toString();
     }
 
-    const scannerUrl = buildScannerUrl();
     document.querySelectorAll(".js-scan-link").forEach(link => {
-      link.href = scannerUrl;
+      const position = link.dataset.position || "unknown";
+      link.href = buildScannerUrl(position);
       link.addEventListener("click", () => capture("landing_scan_cta_clicked", {
-        position: link.dataset.position || "unknown",
-        destination: scannerUrl
+        position,
+        destination: link.href
       }));
     });
 
@@ -421,3 +448,5 @@
   </script>
 </body>
 </html>
+
+
