@@ -102,21 +102,16 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 12px 0;
+      padding: 8px 0;
       background: rgba(245, 247, 250, .94);
       backdrop-filter: blur(12px);
     }
     .title-group { min-width: 0; }
     .title {
       margin: 0;
-      font-size: 20px;
+      font-size: 16px;
       letter-spacing: 0;
       line-height: 1.2;
-    }
-    .subtitle {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 13px;
     }
     .grid {
       display: grid;
@@ -144,6 +139,18 @@
       margin: 0;
       font-size: 15px;
       font-weight: 800;
+    }
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .compact-button {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
     }
     .panel-body { padding: 14px; }
     .camera-box {
@@ -333,33 +340,32 @@
     }
     .queue-list {
       display: grid;
-      gap: 8px;
-      max-height: 400px;
-      overflow: auto;
-      padding-right: 2px;
+      gap: 6px;
+      overflow: visible;
     }
     .queue-item {
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 10px;
+      padding: 8px;
       background: #fff;
     }
     .queue-line {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      align-items: center;
+      align-items: flex-start;
     }
     .barcode {
-      font-size: 16px;
-      font-weight: 850;
+      font-size: 14px;
+      line-height: 1.25;
+      font-weight: 900;
       word-break: break-all;
     }
     .badge {
       flex: none;
       border-radius: 999px;
-      padding: 5px 8px;
-      font-size: 12px;
+      padding: 4px 7px;
+      font-size: 11px;
       font-weight: 850;
       background: #e5e7eb;
       color: var(--text);
@@ -369,9 +375,11 @@
     .badge.uploaded { background: #ecfdf3; color: var(--success); }
     .badge.failed { background: #fef2f2; color: var(--danger); }
     .small {
-      margin: 7px 0 0;
+      margin: 4px 0 0;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
     .notice {
       margin-top: 10px;
@@ -382,6 +390,12 @@
       color: #854d0e;
       font-size: 13px;
       font-weight: 650;
+    }
+    .queue-toggle {
+      width: 100%;
+      margin-top: 8px;
+      min-height: 36px;
+      font-size: 12px;
     }
     .hidden { display: none !important; }
 
@@ -394,7 +408,7 @@
       .step-list { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; }
       .camera-box { min-height: 240px; }
-      .queue-list { max-height: 260px; }
+      .panel-head { align-items: flex-start; }
     }
   </style>
 </head>
@@ -402,10 +416,8 @@
   <main class="app">
     <header class="topbar">
       <div class="title-group">
-        <h1 class="title">ScanKorea 수집 모드</h1>
-        <p class="subtitle">미등록 바코드 판별과 사진 2장 수집을 위한 관리자 전용 테스트 화면</p>
+        <h1 class="title">ScanKorea 관리자 모드</h1>
       </div>
-      <button class="button-ghost" id="reload-queue-btn" type="button">대기열 새로고침</button>
     </header>
 
     <section class="grid">
@@ -469,42 +481,21 @@
         <section class="panel" style="margin-top: 14px;">
           <div class="panel-head">
             <h2 class="panel-title">수집 대기열</h2>
-            <button class="button-danger" id="clear-uploaded-btn" type="button">완료 항목 숨김</button>
+            <div class="panel-actions">
+              <button class="button-secondary compact-button" id="reload-queue-btn" type="button">새로고침</button>
+              <button class="button-danger compact-button" id="clear-uploaded-btn" type="button">완료 숨김</button>
+            </div>
           </div>
           <div class="panel-body">
             <div class="queue-list" id="queue-list"></div>
+            <button class="button-ghost queue-toggle hidden" id="queue-toggle-btn" type="button">전체보기</button>
           </div>
         </section>
       </div>
 
       <div>
-        <section class="panel">
-          <div class="panel-head">
-            <h2 class="panel-title">설정</h2>
-            <button class="button-secondary" id="load-barcodes-btn" type="button">목록 불러오기</button>
-          </div>
-          <div class="panel-body">
-            <label class="label" for="admin-key-input">관리자 키</label>
-            <div class="password-field">
-              <input id="admin-key-input" type="password" autocomplete="off" placeholder="관리자 키를 입력">
-              <button class="icon-button" id="toggle-admin-key-btn" type="button" aria-label="관리자 키 보기" title="관리자 키 보기">
-                <svg id="admin-key-eye-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
-            </div>
-            <div class="toolbar">
-              <button class="button-secondary" id="save-key-btn" type="button">키 저장</button>
-              <button class="button-ghost" id="clear-key-btn" type="button">키 삭제</button>
-            </div>
-            <div class="notice" id="config-notice">
-              기존 바코드 목록을 불러온 뒤에만 스캔을 시작합니다. 목록 불러오기에 실패하면 실제 수집을 진행하지 않습니다.
-            </div>
-          </div>
-        </section>
 
-        <section class="panel" style="margin-top: 14px;">
+        <section class="panel">
           <div class="panel-head">
             <h2 class="panel-title">상태</h2>
             <button class="button-blue" id="upload-all-btn" type="button">대기 항목 업로드</button>
@@ -527,6 +518,32 @@
                 <span class="metric-value" id="failed-count">0</span>
                 <span class="metric-label">업로드 실패</span>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top: 14px;">
+          <div class="panel-head">
+            <h2 class="panel-title">설정</h2>
+            <button class="button-secondary" id="load-barcodes-btn" type="button">목록 불러오기</button>
+          </div>
+          <div class="panel-body">
+            <label class="label" for="admin-key-input">관리자 키</label>
+            <div class="password-field">
+              <input id="admin-key-input" type="password" autocomplete="off" placeholder="관리자 키를 입력">
+              <button class="icon-button" id="toggle-admin-key-btn" type="button" aria-label="관리자 키 보기" title="관리자 키 보기">
+                <svg id="admin-key-eye-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar">
+              <button class="button-secondary" id="save-key-btn" type="button">키 저장</button>
+              <button class="button-ghost" id="clear-key-btn" type="button">키 삭제</button>
+            </div>
+            <div class="notice" id="config-notice">
+              기존 바코드 목록을 불러온 뒤에만 스캔을 시작합니다. 목록 불러오기에 실패하면 실제 수집을 진행하지 않습니다.
             </div>
           </div>
         </section>
@@ -569,6 +586,7 @@
     const captureStepBtn = $("capture-step-btn");
     const nextActions = $("next-actions");
     const queueList = $("queue-list");
+    const queueToggleBtn = $("queue-toggle-btn");
     const lastConfirmedBarcode = $("last-confirmed-barcode");
     const lastConfirmedStatus = $("last-confirmed-status");
 
@@ -586,6 +604,7 @@
     let lastScan = { barcode: "", at: 0 };
     let pendingScan = { barcode: "", count: 0, firstAt: 0, lastAt: 0 };
     let uploadInProgress = false;
+    let queueExpanded = false;
     function setStatus(message, tone = "") {
       scanStatus.textContent = message;
       modeBadge.textContent = tone === "success" ? "정상" : tone === "error" ? "확인 필요" : tone === "warning" ? "수집 중" : "대기";
@@ -1366,32 +1385,46 @@
 
       if (!items.length) {
         queueList.innerHTML = '<p class="small">아직 수집 항목이 없습니다.</p>';
+        queueToggleBtn.classList.add("hidden");
         return;
       }
 
-      for (const item of items) {
+      const visibleLimit = queueExpanded ? 5 : 3;
+      const visibleItems = items.slice(0, visibleLimit);
+
+      for (const item of visibleItems) {
         const row = document.createElement("div");
         row.className = "queue-item";
         const isDuplicateUpdate = item.status === "uploaded" && item.uploadResponse && item.uploadResponse.duplicate;
-        const statusText = isDuplicateUpdate ? "기존 행 업데이트" : ({
+        const statusText = isDuplicateUpdate ? "기존행" : ({
           needs_photos: "사진 필요",
           queued: "대기",
           uploading: "업로드 중",
           uploaded: "완료",
           failed: "실패"
         }[item.status] || item.status);
+        const sheetText = item.sheetRegistered ? "시트 있음" : "시트 대기";
+        const photoText = `전면 ${item.productPhoto ? "있음" : "없음"} · 바코드 ${item.barcodePhoto ? "있음" : "없음"}`;
 
         row.innerHTML = `
           <div class="queue-line">
             <span class="barcode">${escapeHtml(item.barcode)}</span>
             <span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusText)}</span>
           </div>
-          <p class="small">${formatDate(item.createdAt)} · 시트기록 ${item.sheetRegistered ? "있음" : "대기"} · 상품사진 ${item.productPhoto ? "있음" : "없음"} · 바코드사진 ${item.barcodePhoto ? "있음" : "없음"}</p>
+          <p class="small">${formatDate(item.createdAt)} · ${sheetText}<br>${photoText}</p>
           ${item.uploadNote ? `<p class="small">${escapeHtml(item.uploadNote)}</p>` : ""}
           ${item.uploadError ? `<p class="small">오류: ${escapeHtml(item.uploadError)}</p>` : ""}
         `;
         queueList.appendChild(row);
-      }    }
+      }
+
+      if (items.length > 3) {
+        queueToggleBtn.classList.remove("hidden");
+        queueToggleBtn.textContent = queueExpanded ? "3개만 보기" : `전체보기 (${Math.min(5, items.length)}개)`;
+      } else {
+        queueToggleBtn.classList.add("hidden");
+      }
+    }
 
     async function updateCounts() {
       const items = db ? await getAllItems() : [];
@@ -1575,6 +1608,10 @@
           success: "업로드 완료",
           error: "업로드 실패"
         }, uploadQueuedItems).catch(() => {});
+      });
+      queueToggleBtn.addEventListener("click", async () => {
+        queueExpanded = !queueExpanded;
+        await renderQueue();
       });
       $("reload-queue-btn").addEventListener("click", (event) => {
         runButtonAction(event.currentTarget, {
