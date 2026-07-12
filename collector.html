@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -195,6 +195,9 @@
     .button-blue { background: var(--blue); color: #fff; }
     .button-danger { background: var(--danger); color: #fff; }
     .button-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    button.is-busy { background: #64748b; color: #fff; }
+    button.is-success { background: var(--success); color: #fff; }
+    button.is-error { background: var(--danger); color: #fff; }
     .field-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -244,6 +247,35 @@
     .result-box.success { border-color: rgba(21, 128, 61, .25); background: #ecfdf3; }
     .result-box.warning { border-color: rgba(180, 83, 9, .25); background: #fff7ed; }
     .result-box.error { border-color: rgba(220, 38, 38, .25); background: #fef2f2; }
+    .last-barcode-card {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid rgba(37, 99, 235, .2);
+      border-radius: var(--radius);
+      background: #eff6ff;
+    }
+    .last-barcode-label {
+      display: block;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .last-barcode-value {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: .02em;
+      word-break: break-all;
+    }
+    .last-barcode-status {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
     .result-title {
       margin: 0;
       font-size: 16px;
@@ -362,6 +394,7 @@
       .step-list { grid-template-columns: 1fr; }
       .field-row { grid-template-columns: 1fr; }
       .camera-box { min-height: 240px; }
+      .queue-list { max-height: 260px; }
     }
   </style>
 </head>
@@ -400,6 +433,11 @@
               </div>
               <button class="button-blue" id="manual-check-btn" type="button">확인</button>
             </div>
+            <div class="last-barcode-card" id="last-barcode-card">
+              <span class="last-barcode-label">최근 확정 바코드</span>
+              <strong class="last-barcode-value" id="last-confirmed-barcode">없음</strong>
+              <span class="last-barcode-status" id="last-confirmed-status">스캔이 확정되면 다음 스캔 전까지 유지됩니다.</span>
+            </div>
 
             <div class="result-box" id="result-box">
               <p class="result-title" id="result-title">아직 스캔된 바코드가 없습니다.</p>
@@ -425,6 +463,16 @@
 
             <input class="hidden" id="product-photo-input" type="file" accept="image/*" capture="environment">
             <input class="hidden" id="barcode-photo-input" type="file" accept="image/*" capture="environment">
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top: 14px;">
+          <div class="panel-head">
+            <h2 class="panel-title">수집 대기열</h2>
+            <button class="button-danger" id="clear-uploaded-btn" type="button">완료 항목 숨김</button>
+          </div>
+          <div class="panel-body">
+            <div class="queue-list" id="queue-list"></div>
           </div>
         </section>
       </div>
@@ -482,16 +530,6 @@
             </div>
           </div>
         </section>
-
-        <section class="panel" style="margin-top: 14px;">
-          <div class="panel-head">
-            <h2 class="panel-title">수집 대기열</h2>
-            <button class="button-danger" id="clear-uploaded-btn" type="button">완료 항목 숨김</button>
-          </div>
-          <div class="panel-body">
-            <div class="queue-list" id="queue-list"></div>
-          </div>
-        </section>
       </div>
     </section>
   </main>
@@ -505,7 +543,10 @@
       imageQuality: 0.78,
       duplicateCooldownMs: 1600,
       acceptedCameraFormats: ["ean_13", "ean_8", "upc_a", "upc_e"],
-      invalidReadMessageCooldownMs: 1200
+      invalidReadMessageCooldownMs: 1200,
+      stableConfirmCount: 2,
+      stableConfirmWindowMs: 900,
+      unstableVariationWindowMs: 650
     };
 
     const $ = (id) => document.getElementById(id);
@@ -528,6 +569,8 @@
     const captureStepBtn = $("capture-step-btn");
     const nextActions = $("next-actions");
     const queueList = $("queue-list");
+    const lastConfirmedBarcode = $("last-confirmed-barcode");
+    const lastConfirmedStatus = $("last-confirmed-status");
 
     let db = null;
     let mediaStream = null;
@@ -541,7 +584,7 @@
     let currentItem = null;
     let captureStep = "idle";
     let lastScan = { barcode: "", at: 0 };
-    let pendingScan = { barcode: "", count: 0, firstAt: 0 };
+    let pendingScan = { barcode: "", count: 0, firstAt: 0, lastAt: 0 };
     let uploadInProgress = false;
     function setStatus(message, tone = "") {
       scanStatus.textContent = message;
@@ -552,6 +595,57 @@
       resultTitle.textContent = title;
       resultMeta.textContent = meta || "";
       resultBox.className = `result-box ${tone}`.trim();
+    }
+
+    function updateLastConfirmedBarcode(barcode, status = "") {
+      const value = String(barcode || "").trim();
+      lastConfirmedBarcode.textContent = value || "없음";
+      lastConfirmedStatus.textContent = status || (value ? "다음 스캔 전까지 유지됩니다." : "스캔이 확정되면 다음 스캔 전까지 유지됩니다.");
+    }
+
+    function resetPendingScan() {
+      pendingScan = { barcode: "", count: 0, firstAt: 0, lastAt: 0 };
+    }
+
+    function getItemStatusLabel(status) {
+      return ({
+        needs_photos: "사진 필요",
+        queued: "업로드 대기",
+        uploading: "업로드 중",
+        uploaded: "업로드 완료",
+        failed: "업로드 실패"
+      }[status] || status || "상태 없음");
+    }
+
+    function setButtonFeedback(button, state, label) {
+      if (!button) return;
+      if (!button.dataset.originalText) button.dataset.originalText = button.textContent;
+      button.classList.remove("is-busy", "is-success", "is-error");
+      if (state) button.classList.add(`is-${state}`);
+      button.textContent = label || button.dataset.originalText;
+    }
+
+    async function runButtonAction(button, labels, action) {
+      const previousDisabled = button ? button.disabled : false;
+      try {
+        if (button) {
+          button.disabled = true;
+          setButtonFeedback(button, "busy", labels.busy || "처리 중...");
+        }
+        const result = await action();
+        if (result === false) throw new Error("action_failed");
+        if (button) setButtonFeedback(button, "success", labels.success || "완료");
+      } catch (error) {
+        if (button) setButtonFeedback(button, "error", labels.error || "실패");
+        throw error;
+      } finally {
+        if (button) {
+          setTimeout(() => {
+            button.disabled = previousDisabled;
+            setButtonFeedback(button, "", button.dataset.originalText);
+          }, 900);
+        }
+      }
     }
 
     function getAdminKey() {
@@ -700,7 +794,7 @@
         setStatus("관리자 키를 입력한 뒤 목록을 불러와 주세요.", "error");
         setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "error");
         await updateCounts();
-        return;
+        return false;
       }
 
       url.searchParams.set("key", key);
@@ -718,6 +812,9 @@
         knownBarcodeSet = new Set(barcodes.map(normalizeScannedCode).filter(Boolean));
         knownBarcodeListLoaded = true;
         setStatus(`기존 바코드 ${knownBarcodeSet.size.toLocaleString("ko-KR")}개를 불러왔습니다.`, "success");
+        updateControls();
+        await updateCounts();
+        return true;
       } catch (error) {
         knownBarcodeSet = new Set();
         knownBarcodeListLoaded = false;
@@ -725,6 +822,9 @@
         setStatus("기존 바코드 목록을 불러오지 못했습니다. 수집을 시작하지 않습니다.", "error");
         setResult("목록 불러오기 실패", `오류: ${detail} · 입력된 키 길이: ${key.length}`, "error");
         console.warn("barcode list load failed", error);
+        updateControls();
+        await updateCounts();
+        return false;
       }
 
       updateControls();
@@ -787,11 +887,12 @@
       );
     }
     async function startScanning() {
-      if (!requireKnownBarcodeList()) return;
+      if (!requireKnownBarcodeList()) return false;
+      resetPendingScan();
 
       if (!window.isSecureContext) {
         setStatus("카메라는 HTTPS 또는 localhost 환경에서만 안정적으로 동작합니다.", "error");
-        return;
+        return false;
       }
 
       try {
@@ -808,9 +909,11 @@
         }
 
         setStatus("스캔 중입니다. 바코드를 안내선 안에 맞춰주세요.", "success");
+        return true;
       } catch (error) {
         console.error("camera start failed", error);
         setStatus("카메라를 시작하지 못했습니다. 권한 또는 브라우저 환경을 확인해 주세요.", "error");
+        return false;
       }
     }
     async function stopScanning() {
@@ -842,17 +945,54 @@
 
       if (!shouldAcceptCameraBarcode(code, format)) {
         if (pendingScan.barcode !== code || now - pendingScan.firstAt > COLLECTOR_CONFIG.invalidReadMessageCooldownMs) {
-          pendingScan = { barcode: code, count: 1, firstAt: now };
+          pendingScan = { barcode: code, count: 1, firstAt: now, lastAt: now };
           setStatus("상품 바코드가 정확히 잡히지 않았습니다. 숫자 부분을 선명하게 맞춰주세요.", "warning");
+          setResult("바코드 인식 보류", `후보값: ${code}`, "warning");
         }
         return;
       }
 
-      pendingScan = { barcode: "", count: 0, firstAt: 0 };
-      lastScan = { barcode: code, at: now };
+      const previousCode = pendingScan.barcode;
+      const previousLastAt = pendingScan.lastAt || pendingScan.firstAt || 0;
+      if (previousCode && previousCode !== code && now - previousLastAt < COLLECTOR_CONFIG.unstableVariationWindowMs) {
+        pendingScan = { barcode: code, count: 1, firstAt: now, lastAt: now };
+        setStatus("인식값이 흔들립니다. 바코드를 안내선 안에 더 정확히 맞춰주세요.", "warning");
+        setResult("바코드 인식값 확인 중", `후보가 바뀜: ${previousCode} / ${code}`, "warning");
+        return;
+      }
 
+      if (previousCode === code && now - pendingScan.firstAt <= COLLECTOR_CONFIG.stableConfirmWindowMs) {
+        pendingScan.count += 1;
+        pendingScan.lastAt = now;
+      } else {
+        pendingScan = { barcode: code, count: 1, firstAt: now, lastAt: now };
+      }
+
+      if (pendingScan.count < COLLECTOR_CONFIG.stableConfirmCount) {
+        setStatus(`바코드 확인 중: ${code} (${pendingScan.count}/${COLLECTOR_CONFIG.stableConfirmCount})`, "warning");
+        setResult("바코드 후보 확인 중", code, "warning");
+        return;
+      }
+
+      resetPendingScan();
+      lastScan = { barcode: code, at: now };
+      updateLastConfirmedBarcode(code, "확정됨. 등록 여부를 확인합니다.");
       inspectBarcode(code);
     }
+
+    async function findCollectedItemByCandidates(candidates) {
+      const lookup = new Set(candidates.map(normalizeScannedCode).filter(Boolean));
+      if (!lookup.size || !db) return null;
+
+      const items = await getAllItems();
+      return items.find(item => {
+        const values = [item.barcode, ...(item.candidates || [])]
+          .map(normalizeScannedCode)
+          .filter(Boolean);
+        return values.some(value => lookup.has(value));
+      }) || null;
+    }
+
     async function inspectBarcode(code) {
       if (!requireKnownBarcodeList()) return;
 
@@ -860,18 +1000,30 @@
       if (!candidates.length) return;
 
       isProcessingScan = true;
+      updateLastConfirmedBarcode(candidates[0], "등록 여부 확인 중");
       setStatus(`바코드 확인 중: ${candidates[0]}`, "warning");
 
       const localHit = candidates.some(candidate => knownBarcodeSet.has(candidate));
       if (localHit) {
+        updateLastConfirmedBarcode(candidates[0], "이미 등록된 바코드");
         setResult("이미 등록된 바코드입니다.", candidates.join(", "), "success");
         setStatus("등록된 상품입니다. 다음 상품을 스캔해 주세요.", "success");
         setTimeout(() => { isProcessingScan = false; }, 900);
         return;
       }
 
+      const queuedHit = await findCollectedItemByCandidates(candidates);
+      if (queuedHit) {
+        updateLastConfirmedBarcode(candidates[0], `이미 수집한 항목 · ${getItemStatusLabel(queuedHit.status)}`);
+        setResult("이미 수집 대기열에 있는 바코드입니다.", `${candidates.join(", ")} · 상태: ${getItemStatusLabel(queuedHit.status)}`, "warning");
+        setStatus("이미 처리 중인 상품입니다. 다음 상품을 스캔해 주세요.", "warning");
+        setTimeout(() => { isProcessingScan = false; }, 900);
+        return;
+      }
+
       const serverHit = COLLECTOR_CONFIG.productCheckUrl ? await checkProductOnServer(candidates) : false;
       if (serverHit) {
+        updateLastConfirmedBarcode(candidates[0], "서버에서 등록 상품으로 확인됨");
         setResult("서버에서 등록 상품으로 확인했습니다.", candidates.join(", "), "success");
         setStatus("등록된 상품입니다. 다음 상품을 스캔해 주세요.", "success");
         setTimeout(() => { isProcessingScan = false; }, 900);
@@ -880,6 +1032,7 @@
 
       await createMissingItem(candidates[0], candidates);
     }
+
     async function checkProductOnServer(candidates) {
       if (!COLLECTOR_CONFIG.productCheckUrl) return false;
 
@@ -1193,6 +1346,10 @@
           : "수집대기 시트와 구글 드라이브에 업로드했습니다.";
         item.uploadError = "";
         item.sheetRegistered = true;
+        [item.barcode, ...(item.candidates || [])]
+          .map(normalizeScannedCode)
+          .filter(Boolean)
+          .forEach(value => knownBarcodeSet.add(value));
         item.updatedAt = new Date().toISOString();
         await saveItem(item);
       } catch (error) {
@@ -1266,36 +1423,90 @@
     }
 
     function bindEvents() {
-      $("start-scan-btn").addEventListener("click", startScanning);
-      $("stop-scan-btn").addEventListener("click", async () => {
-        await stopScanning();
-        isProcessingScan = false;
-        setStatus("카메라를 정지했습니다.");
+      $("start-scan-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "카메라 시작 중",
+          success: "카메라 실행 중",
+          error: "시작 실패"
+        }, startScanning).catch(() => {});
       });
-      $("load-barcodes-btn").addEventListener("click", loadKnownBarcodes);
-      $("manual-check-btn").addEventListener("click", () => {
-        inspectBarcode(manualBarcodeInput.value);
+
+      $("stop-scan-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "정지 중",
+          success: "정지 완료",
+          error: "정지 실패"
+        }, async () => {
+          await stopScanning();
+          resetPendingScan();
+          isProcessingScan = false;
+          setStatus("카메라를 정지했습니다.");
+          return true;
+        }).catch(() => {});
       });
+
+      $("load-barcodes-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "불러오는 중",
+          success: "불러오기 완료",
+          error: "불러오기 실패"
+        }, loadKnownBarcodes).catch(() => {});
+      });
+
+      $("manual-check-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "확인 중",
+          success: "확인 완료",
+          error: "확인 실패"
+        }, async () => {
+          if (!knownBarcodeListLoaded) {
+            requireKnownBarcodeList();
+            return false;
+          }
+          resetPendingScan();
+          await inspectBarcode(manualBarcodeInput.value);
+          return true;
+        }).catch(() => {});
+      });
+
       manualBarcodeInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") inspectBarcode(manualBarcodeInput.value);
       });
       toggleAdminKeyBtn.addEventListener("click", () => {
         setAdminKeyVisibility(adminKeyInput.type === "password");
       });
-      $("save-key-btn").addEventListener("click", () => {
-        localStorage.setItem("collector_admin_key", getAdminKey());
-        setStatus("관리자 키를 이 브라우저에 저장했습니다. 목록을 다시 불러옵니다.", "success");
-        loadKnownBarcodes();
+
+      $("save-key-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "저장 중",
+          success: "저장 완료",
+          error: "저장 실패"
+        }, async () => {
+          localStorage.setItem("collector_admin_key", getAdminKey());
+          setStatus("관리자 키를 이 브라우저에 저장했습니다. 목록을 다시 불러옵니다.", "success");
+          return await loadKnownBarcodes();
+        }).catch(() => {});
       });
-      $("clear-key-btn").addEventListener("click", () => {
-        localStorage.removeItem("collector_admin_key");
-        adminKeyInput.value = "";
-        knownBarcodeSet = new Set();
-        knownBarcodeListLoaded = false;
-        updateControls();
-        setStatus("관리자 키를 삭제했습니다.");
-        setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "");
+
+      $("clear-key-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "삭제 중",
+          success: "삭제 완료",
+          error: "삭제 실패"
+        }, async () => {
+          localStorage.removeItem("collector_admin_key");
+          adminKeyInput.value = "";
+          knownBarcodeSet = new Set();
+          knownBarcodeListLoaded = false;
+          resetPendingScan();
+          updateControls();
+          await updateCounts();
+          setStatus("관리자 키를 삭제했습니다.");
+          setResult("관리자 키 대기", "키 입력 후 키 저장 또는 목록 불러오기를 눌러 주세요.", "");
+          return true;
+        }).catch(() => {});
       });
+
       captureStepBtn.addEventListener("click", async () => {
         if (!currentItem) return;
 
@@ -1333,27 +1544,63 @@
         event.target.value = "";
         capturePhoto("barcode", file);
       });
-      $("next-scan-btn").addEventListener("click", async () => {
-        currentItem = null;
-        isProcessingScan = false;
-        setCaptureStep("idle");
-        nextActions.classList.add("hidden");
-        setResult("다음 상품을 스캔할 수 있습니다.", "", "");
-        await startScanning();
+
+      $("next-scan-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "준비 중",
+          success: "스캔 시작",
+          error: "시작 실패"
+        }, async () => {
+          currentItem = null;
+          isProcessingScan = false;
+          resetPendingScan();
+          updateLastConfirmedBarcode("", "다음 상품 스캔 대기 중");
+          setCaptureStep("idle");
+          nextActions.classList.add("hidden");
+          setResult("다음 상품을 스캔할 수 있습니다.", "", "");
+          return await startScanning();
+        }).catch(() => {});
       });
-      $("retry-current-upload-btn").addEventListener("click", uploadQueuedItems);
-      $("upload-all-btn").addEventListener("click", uploadQueuedItems);
-      $("reload-queue-btn").addEventListener("click", async () => {
-        await renderQueue();
-        await updateCounts();
+
+      $("retry-current-upload-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "업로드 중",
+          success: "업로드 완료",
+          error: "업로드 실패"
+        }, uploadQueuedItems).catch(() => {});
       });
-      $("clear-uploaded-btn").addEventListener("click", async () => {
-        const items = await getAllItems();
-        for (const item of items) {
-          if (item.status === "uploaded") await deleteItem(item.id);
-        }
-        await renderQueue();
-        await updateCounts();
+      $("upload-all-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "업로드 중",
+          success: "업로드 완료",
+          error: "업로드 실패"
+        }, uploadQueuedItems).catch(() => {});
+      });
+      $("reload-queue-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "새로고침 중",
+          success: "새로고침 완료",
+          error: "새로고침 실패"
+        }, async () => {
+          await renderQueue();
+          await updateCounts();
+          return true;
+        }).catch(() => {});
+      });
+      $("clear-uploaded-btn").addEventListener("click", (event) => {
+        runButtonAction(event.currentTarget, {
+          busy: "정리 중",
+          success: "정리 완료",
+          error: "정리 실패"
+        }, async () => {
+          const items = await getAllItems();
+          for (const item of items) {
+            if (item.status === "uploaded") await deleteItem(item.id);
+          }
+          await renderQueue();
+          await updateCounts();
+          return true;
+        }).catch(() => {});
       });
       window.addEventListener("online", uploadQueuedItems);
       window.addEventListener("beforeunload", () => {
