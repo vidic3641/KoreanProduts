@@ -411,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span class="meta-chip" id="product-category-chip"></span>
           <span class="meta-chip hidden" id="product-spf-chip"></span>
         </div>
-        <p class="product-summary" id="product-summary"></p>
+        <p class="product-summary" id="product-summary" data-kpg-section="summary"></p>
         <button class="secondary-btn share-btn" id="copy-product-link-btn" type="button">
           <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -422,16 +422,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="share-status hidden" id="share-status"></p>
       </div>
       <!-- 순서 조정: Description -> Volume -> Features -> How to use -> Caution -> Tags 순 -->
-      <div class="section"><h3 class="section-title" id="label-description">Description</h3><p class="section-body" id="product-description"></p></div>
-      <div class="section"><h3 class="section-title" id="label-volume">Volume</h3><p class="section-body" id="product-volume"></p></div>
-      <div class="section"><h3 class="section-title" id="label-feature">Features</h3><p class="section-body" id="product-feature"></p></div>
-      <div class="section"><h3 class="section-title" id="label-usage">How to use</h3><p class="section-body" id="product-usage"></p></div>
-      <div class="section"><h3 class="section-title" id="label-caution">Caution</h3><p class="section-body" id="product-caution"></p></div>
-      <div class="section"><h3 class="section-title" id="label-tag">Tags</h3><p class="section-body" id="product-tag"></p></div>
-      <div class="section hidden" id="section-functional"><h3 class="section-title" id="label-functional">Functional</h3><p class="section-body" id="product-functional"></p></div>
+      <div class="section" data-kpg-section="description"><h3 class="section-title" id="label-description">Description</h3><p class="section-body" id="product-description"></p></div>
+      <div class="section" data-kpg-section="volume"><h3 class="section-title" id="label-volume">Volume</h3><p class="section-body" id="product-volume"></p></div>
+      <div class="section" data-kpg-section="feature"><h3 class="section-title" id="label-feature">Features</h3><p class="section-body" id="product-feature"></p></div>
+      <div class="section" data-kpg-section="usage"><h3 class="section-title" id="label-usage">How to use</h3><p class="section-body" id="product-usage"></p></div>
+      <div class="section" data-kpg-section="caution"><h3 class="section-title" id="label-caution">Caution</h3><p class="section-body" id="product-caution"></p></div>
+      <div class="section" data-kpg-section="tag"><h3 class="section-title" id="label-tag">Tags</h3><p class="section-body" id="product-tag"></p></div>
+      <div class="section hidden" id="section-functional" data-kpg-section="functional"><h3 class="section-title" id="label-functional">Functional</h3><p class="section-body" id="product-functional"></p></div>
       
       <!-- 성분 섹션을 가장 하단으로 이동 및 주의사항 추가 -->
-      <div class="section">
+      <div class="section" data-kpg-section="ingredient">
         <h3 class="section-title" id="label-ingredient">Ingredients</h3>
         <p class="section-body" id="product-ingredient"></p>
         <p id="ingredient-disclaimer" style="margin-top: 12px; font-size: 13px; color: var(--sub); line-height: 1.5;"></p>
@@ -491,6 +491,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     let lastIgnoredQrAt = 0;
     let lastMissingBarcode = "";
     let lastCameraErrorContext = null;
+    const initialUrlParams = new URLSearchParams(window.location.search);
+    const attributionKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "gclid", "gbraid", "wbraid", "fbclid", "entry", "cta"];
+    const initialAttributionParams = getAttributionParamsFrom(initialUrlParams);
+    const scanFlowId = initialUrlParams.get("scan_flow_id") || readStoredScanFlowId() || createScanFlowId();
+    writeStoredScanFlowId(scanFlowId);
+    let currentScreenName = "";
+    let scanPageViewCount = 0;
+    let currentProductAnalytics = {};
+    let viewedProductSectionKeys = new Set();
+    let productSectionObserver = null;
     const translations = {
       "ko": {
         home: {
@@ -1348,16 +1358,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return canvas.toDataURL("image/jpeg", quality);
     }
 
+    function pushDataLayerEvent(eventName, eventProperties = {}) {
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          ...eventProperties,
+          event: eventName,
+          kpg_event_name: eventName
+        });
+      } catch (e) {}
+    }
+
     function trackEvent(eventName, properties = {}) {
+      const eventProperties = {
+        lang: getCurrentLang(),
+        scan_flow_id: scanFlowId,
+        screen_name: currentScreenName || "unknown",
+        path: window.location.pathname,
+        url: window.location.href,
+        page_path: window.location.pathname,
+        page_location: window.location.href,
+        ...getUrlTrackingParams(),
+        ...properties
+      };
+
+      pushDataLayerEvent(eventName, eventProperties);
+
       if (!window.posthog || typeof window.posthog.capture !== "function") return;
 
       try {
-        window.posthog.capture(eventName, {
-          lang: getCurrentLang(),
-          path: window.location.pathname,
-          url: window.location.href,
-          ...properties
-        });
+        window.posthog.capture(eventName, eventProperties);
       } catch (e) {}
     }
 
@@ -1419,16 +1449,103 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       return { barcode, lang };
     }
 
+    function getAttributionParamsFrom(params) {
+      return attributionKeys.reduce((result, key) => {
+        result[key] = params.get(key) || "";
+        return result;
+      }, {});
+    }
+
     function getUrlTrackingParams() {
-      const params = new URLSearchParams(window.location.search);
+      const currentParams = getAttributionParamsFrom(new URLSearchParams(window.location.search));
+
+      return attributionKeys.reduce((result, key) => {
+        result[key] = currentParams[key] || initialAttributionParams[key] || "";
+        return result;
+      }, {});
+    }
+
+    function createScanFlowId() {
+      return `scan_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function readStoredScanFlowId() {
+      try { return window.sessionStorage.getItem("kpg_scan_flow_id") || ""; } catch (e) { return ""; }
+    }
+
+    function writeStoredScanFlowId(value) {
+      try { window.sessionStorage.setItem("kpg_scan_flow_id", value); } catch (e) {}
+    }
+
+    function getScreenName(screen) {
+      if (screen === languageScreen) return "language";
+      if (screen === scanScreen) return "scan";
+      if (screen === detailScreen) return "detail";
+      return "unknown";
+    }
+
+    function getSourceDetail(isFromScan, trigger = "") {
+      if (isFromScan) return "scan";
+      if (trigger === "url_barcode" || trigger === "browser_history") return "url";
+      return "manual";
+    }
+
+    function trackScanPageViewed(trigger = "screen_show") {
+      scanPageViewCount += 1;
+      trackEvent("scan_page_viewed", {
+        view_trigger: trigger,
+        view_count: scanPageViewCount,
+        has_barcode: Boolean(barcodeInput.value.trim()),
+        entry: initialAttributionParams.entry || "",
+        cta: initialAttributionParams.cta || ""
+      });
+    }
+
+    function getProductAnalyticsContext(product, barcode, source, sourceDetail, lookupTrigger) {
+      const common = product.common || {};
+
       return {
-        utm_source: params.get("utm_source") || "",
-        utm_medium: params.get("utm_medium") || "",
-        utm_campaign: params.get("utm_campaign") || ""
+        barcode,
+        brand: common.brand || "",
+        category: common.category || "",
+        spf_pa: common.spf_pa || "",
+        source,
+        source_detail: sourceDetail,
+        lookup_trigger: lookupTrigger
       };
     }
 
-    function logNotFoundBarcode({ barcode, candidates = [], source = "" } = {}) {
+    function resetProductSectionTracking(context = {}) {
+      currentProductAnalytics = { ...context };
+      viewedProductSectionKeys = new Set();
+    }
+
+    function initProductSectionTracking() {
+      if (!("IntersectionObserver" in window)) return;
+
+      productSectionObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          const section = entry.target.dataset.kpgSection || "";
+          if (!section) return;
+
+          const key = `${currentProductAnalytics.barcode || "unknown"}:${section}`;
+          if (viewedProductSectionKeys.has(key)) return;
+          viewedProductSectionKeys.add(key);
+
+          trackEvent("product_section_viewed", {
+            ...currentProductAnalytics,
+            section,
+            visibility_ratio: Number(entry.intersectionRatio.toFixed(2))
+          });
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll("[data-kpg-section]").forEach(section => productSectionObserver.observe(section));
+    }
+
+    function logNotFoundBarcode({ barcode, candidates = [], source = "", sourceDetail = "", lookupTrigger = "" } = {}) {
       const cleanBarcode = String(barcode || "").trim();
       if (!cleanBarcode) return;
 
@@ -1442,6 +1559,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           candidates,
           lang: getCurrentLang(),
           source,
+          sourceDetail,
+          lookupTrigger,
           url: window.location.href,
           path: window.location.pathname,
           referrer: document.referrer || "",
@@ -1452,7 +1571,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (response.ok) {
           trackEvent("not_found_barcode_logged", {
             barcode: cleanBarcode,
-            source
+            source,
+            source_detail: sourceDetail,
+            lookup_trigger: lookupTrigger
           });
           return;
         }
@@ -1460,12 +1581,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         trackEvent("not_found_barcode_log_failed", {
           barcode: cleanBarcode,
           source,
+          source_detail: sourceDetail,
+          lookup_trigger: lookupTrigger,
           status: response.status
         });
       }).catch(err => {
         trackEvent("not_found_barcode_log_failed", {
           barcode: cleanBarcode,
           source,
+          source_detail: sourceDetail,
+          lookup_trigger: lookupTrigger,
           error_message: err.message || ""
         });
       });
@@ -1811,7 +1936,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     }
 
-    async function searchProductByBarcode(isFromScan = false) {
+    async function searchProductByBarcode(isFromScan = false, trigger = "") {
       const rawBarcode = barcodeInput.value.trim();
       const candidates = getBarcodeCandidates(rawBarcode);
       const text = t();
@@ -1819,29 +1944,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       if (!candidates.length) return;
 
+      const source = isFromScan ? "scan" : "manual_or_url";
+      const sourceDetail = getSourceDetail(isFromScan, trigger);
+      const lookupTrigger = trigger || (isFromScan ? "scan_detected" : "manual_unknown");
+
       statusMessage.textContent = text.loading;
       statusMessage.classList.remove("hidden", "error");
       setScanStatusOverlay(text.loading);
       hideMissingReport();
       searchBtn.disabled = true;
 
+      trackEvent("product_lookup_started", {
+        barcode: rawBarcode,
+        candidate_count: candidates.length,
+        candidate_barcodes: candidates.join(","),
+        input_length: rawBarcode.length,
+        source,
+        source_detail: sourceDetail,
+        lookup_trigger: lookupTrigger
+      });
+
       try {
         let matchedProduct = null;
+        let matchedBarcode = "";
 
         for (const barcode of candidates) {
           const res = await fetch(`/api/getProduct?barcode=${encodeURIComponent(barcode)}&lang=${encodeURIComponent(lang)}`);
 
           if (res.ok) {
             matchedProduct = await res.json();
+            matchedBarcode = barcode;
             barcodeInput.value = barcode;
             updateProductUrl(barcode, lang);
 
-            trackEvent("product_found", {
-              barcode,
-              brand: matchedProduct.common?.brand || "",
-              category: matchedProduct.common?.category || "",
-              source: isFromScan ? "scan" : "manual_or_url"
-            });
+            trackEvent("product_found", getProductAnalyticsContext(matchedProduct, barcode, source, sourceDetail, lookupTrigger));
 
             break;
           }
@@ -1849,34 +1985,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         if (matchedProduct) {
           renderProduct(matchedProduct);
+          const productContext = getProductAnalyticsContext(matchedProduct, matchedBarcode || barcodeInput.value.trim(), source, sourceDetail, lookupTrigger);
+          resetProductSectionTracking(productContext);
 
           trackEvent("product_detail_viewed", {
-            barcode: barcodeInput.value.trim(),
-            brand: matchedProduct.common?.brand || "",
-            category: matchedProduct.common?.category || "",
-            source: isFromScan ? "scan" : "manual_or_url"
+            ...productContext,
+            screen_name: "detail"
           });
 
           statusMessage.classList.add("hidden");
           setScanStatusOverlay();
-          showScreen(detailScreen);
+          showScreen(detailScreen, { trigger: "product_found" });
           await stopScanning();
           return;
         }
 
-        const notFoundSource = isFromScan ? "scan" : "manual_or_url";
-
         trackEvent("product_not_found", {
           barcode: rawBarcode,
           candidates,
+          candidate_count: candidates.length,
+          candidate_barcodes: candidates.join(","),
           input_length: rawBarcode.length,
-          source: notFoundSource
+          source,
+          source_detail: sourceDetail,
+          lookup_trigger: lookupTrigger
         });
 
         logNotFoundBarcode({
           barcode: rawBarcode,
           candidates,
-          source: notFoundSource
+          source,
+          sourceDetail,
+          lookupTrigger
         });
 
         statusMessage.textContent = text.alertDbMissing;
@@ -1890,6 +2030,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       } catch (err) {
         console.error("Search Error:", err);
+        trackEvent("product_lookup_failed", {
+          barcode: rawBarcode,
+          candidate_count: candidates.length,
+          candidate_barcodes: candidates.join(","),
+          input_length: rawBarcode.length,
+          source,
+          source_detail: sourceDetail,
+          lookup_trigger: lookupTrigger,
+          error_message: err.message || ""
+        });
         statusMessage.textContent = text.alertUnknown;
         setScanStatusOverlay(text.alertUnknown, "error");
         statusMessage.classList.remove("hidden");
@@ -2113,16 +2263,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       isProcessingScan = false;
     }
 
-    function showScreen(screen) {
+    function showScreen(screen, options = {}) {
       [languageScreen, scanScreen, detailScreen].forEach(s => s.classList.add("hidden"));
       screen.classList.remove("hidden");
       window.scrollTo(0, 0);
+      currentScreenName = getScreenName(screen);
       
       applyLocaleTypography(screen === languageScreen ? getLanguageScreenLang() : getCurrentLang());
       const text = t();
 
       if (screen === languageScreen) {
         updateLanguageScreenText();
+        trackEvent("language_screen_viewed", {
+          view_trigger: options.trigger || "screen_show"
+        });
       } else if (screen === scanScreen) {
         const home = (translations[getCurrentLang()] || translations.en).home || translations.en.home;
         document.getElementById("scan-title").textContent = text.scanTitle;
@@ -2145,6 +2299,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         startCameraBtn.textContent = text.cameraBtn;
         updateInAppBoxText();
         updateInAppVisibility();
+        trackScanPageViewed(options.trigger || "screen_show");
       } else if (screen === detailScreen) {
         document.getElementById("detail-title").textContent = text.detailTitle;
         setLanguageSwitchButtonText("change-language-from-detail", text.changeLanguage);
@@ -2174,7 +2329,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         clearProductUrl();
         resetScanState();
-        showScreen(scanScreen);
+        showScreen(scanScreen, { trigger: "language_selected" });
       });
     });
 
@@ -2191,14 +2346,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     searchBtn.addEventListener("click", () => {
       const manualBarcode = barcodeInput.value.trim();
       trackManualBarcodeSearch(manualBarcode, "button_click");
-      searchProductByBarcode(false);
+      searchProductByBarcode(false, "button_click");
     });
 
     barcodeInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         const manualBarcode = barcodeInput.value.trim();
         trackManualBarcodeSearch(manualBarcode, "enter_key");
-        searchProductByBarcode(false);
+        searchProductByBarcode(false, "enter_key");
       }
     });
 
@@ -2220,6 +2375,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const text = t();
       const shareUrl = getProductShareUrl();
       const sharePayload = getProductSharePayload(text, shareUrl);
+      const shareMethod = navigator.share ? "native_share" : "copy_link";
+
+      trackEvent("product_share_clicked", {
+        barcode: barcodeInput.value.trim(),
+        url: shareUrl,
+        method: shareMethod
+      });
 
       if (navigator.share) {
         try {
@@ -2263,6 +2425,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const tipsBox = document.getElementById("scan-tips");
       const isOpen = tipsBox.classList.toggle("open");
       document.getElementById("scan-tips-toggle").setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) trackEvent("scan_tips_opened");
     });
 
     document.getElementById("feedback-open-btn").addEventListener("click", () => {
@@ -2342,7 +2505,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       clearProductUrl();
       resetScanState();
       hideMissingReport();
-      showScreen(scanScreen);
+      showScreen(scanScreen, { trigger: "missing_product_scan_another" });
       await startScanning();
     });
 
@@ -2440,17 +2603,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
     
     document.getElementById("change-language-from-scan").addEventListener("click", () => {
+      trackEvent("change_language_clicked", {
+        from_screen: "scan"
+      });
       stopScanning();
       clearProductUrl();
       resetScanState();
-      showScreen(languageScreen);
+      showScreen(languageScreen, { trigger: "change_language_from_scan" });
     });
 
     document.getElementById("change-language-from-detail").addEventListener("click", () => {
+      trackEvent("change_language_clicked", {
+        from_screen: "detail"
+      });
       stopScanning();
       clearProductUrl();
       resetScanState();
-      showScreen(languageScreen);
+      showScreen(languageScreen, { trigger: "change_language_from_detail" });
     });
 
     backToScanBtn.addEventListener("click", () => {
@@ -2458,14 +2627,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       stopScanning();
       clearProductUrl();
       resetScanState();
-      showScreen(scanScreen);
+      showScreen(scanScreen, { trigger: "back_to_scan" });
     });
 
     newScanBtn.addEventListener("click", () => {
       trackEvent("scan_again_clicked");
       clearProductUrl();
       resetScanState();
-      showScreen(scanScreen);
+      showScreen(scanScreen, { trigger: "scan_again" });
     });
 
     async function initApp() {
@@ -2480,14 +2649,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           localStorage.setItem("lang", "en");
         }
 
-        showScreen(scanScreen);
         barcodeInput.value = urlParams.barcode;
-        await searchProductByBarcode(false);
+        showScreen(scanScreen, { trigger: "url_barcode" });
+        await searchProductByBarcode(false, "url_barcode");
         return;
       }
 
-      if (localStorage.getItem("lang")) showScreen(scanScreen);
-      else showScreen(languageScreen);
+      if (localStorage.getItem("lang")) showScreen(scanScreen, { trigger: "returning_user" });
+      else showScreen(languageScreen, { trigger: "initial_language_selection" });
     }
 
     window.addEventListener("popstate", async () => {
@@ -2499,15 +2668,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       if (urlParams.barcode) {
         resetScanState();
-        showScreen(scanScreen);
         barcodeInput.value = urlParams.barcode;
-        await searchProductByBarcode(false);
+        showScreen(scanScreen, { trigger: "browser_history" });
+        await searchProductByBarcode(false, "browser_history");
       } else {
         resetScanState();
-        showScreen(scanScreen);
+        showScreen(scanScreen, { trigger: "browser_history" });
       }
     });
 
+    initProductSectionTracking();
     initApp();
   </script>
 </body>

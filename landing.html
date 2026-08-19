@@ -400,7 +400,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <script>
     const SCANNER_BASE_URL = "https://korean-products-guide.vercel.app/";
     const LANDING_VARIANT = "current_style_conversion_ja";
-    const passthroughKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"];
+    const passthroughKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "gclid", "gbraid", "wbraid", "fbclid"];
     const landingParams = new URLSearchParams(window.location.search);
 
     function createScanFlowId() {
@@ -419,14 +419,46 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const scanFlowId = landingParams.get("scan_flow_id") || readStoredFlowId() || createScanFlowId();
     writeStoredFlowId(scanFlowId);
 
+    function pushDataLayerEvent(eventName, eventProperties = {}) {
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          ...eventProperties,
+          event: eventName,
+          kpg_event_name: eventName
+        });
+      } catch (e) {}
+    }
+
+    function getLandingTrackingParams() {
+      return passthroughKeys.reduce((result, key) => {
+        result[key] = landingParams.get(key) || "";
+        return result;
+      }, {});
+    }
+
     function capture(eventName, properties = {}) {
-      if (!window.posthog || typeof window.posthog.capture !== "function") return;
-      window.posthog.capture(eventName, {
+      const eventProperties = {
+        lang: "ja",
         language: "ja",
         variant: LANDING_VARIANT,
         scan_flow_id: scanFlowId,
+        path: window.location.pathname,
+        url: window.location.href,
+        page_path: window.location.pathname,
+        page_location: window.location.href,
+        screen_name: "landing",
+        ...getLandingTrackingParams(),
         ...properties
-      });
+      };
+
+      pushDataLayerEvent(eventName, eventProperties);
+
+      if (!window.posthog || typeof window.posthog.capture !== "function") return;
+
+      try {
+        window.posthog.capture(eventName, eventProperties);
+      } catch (e) {}
     }
 
     function buildScannerUrl(position = "unknown") {
@@ -454,8 +486,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     const stickyScan = document.getElementById("sticky-scan");
     const heroActions = document.querySelector(".hero-actions");
+    let stickyCtaViewed = false;
     const stickyObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => stickyScan.classList.toggle("visible", !entry.isIntersecting));
+      entries.forEach(entry => {
+        const isVisible = !entry.isIntersecting;
+        stickyScan.classList.toggle("visible", isVisible);
+
+        if (isVisible && !stickyCtaViewed) {
+          stickyCtaViewed = true;
+          capture("landing_sticky_cta_viewed", {
+            position: "sticky-scan"
+          });
+        }
+      });
     }, { threshold: .1 });
     stickyObserver.observe(heroActions);
 
